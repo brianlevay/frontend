@@ -1,4 +1,36 @@
+/* toolSetting > sliderSect > sliderDiv */
+/* toolSetting > preview */
+
+.toolSetting {
+    display: block;
+}
+
+.sliderSect {
+    display: inline-block;
+}
+
+.preview {
+    display: inline-block;
+    position: static;
+    outline: 1px solid black;
+    width: 50px;
+    height: 50px;
+    vertical-align: top;
+}
+
+#brushSizePrev {
+    position: relative;
+    margin: auto;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#brushColorPrev {
+    width: 100%;
+    height: 100%;
+}
 
 canvas {
+    margin: 20px 0px;
     outline: 1px solid black;
 }

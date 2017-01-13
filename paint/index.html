@@ -18,28 +18,49 @@
 	    	<section id="tools">
 	    		<div id="setBrush">
 	    			<h3 class="toolType">Brush Style</h3>
-	    			<div class="sliderDiv">
-	    				<span class="toolLabel">Size</span>
-	    				<input id="brushSize" class="brushSlider" type="range" min="1" max="20" step="1"></input>
-	    				<span id="brushSizeVal"></span>
+	    			<div class="toolSetting">
+	    				<div class="sliderSect">
+	    					<div class="sliderDiv">
+			    				<span class="toolLabel">Size</span>
+			    				<input id="brushSize" class="brushSlider" type="range" min="1" max="20" step="1"></input>
+			    				<span id="brushSizeVal"></span>
+			    			</div>
+			    			<div class="sliderDiv">
+			    				<span class="toolLabel">Shape</span>
+			    				<input id="circleRadio" class="brushRadio" name="brushShape" type="radio" value="circle" checked></input>
+			    				<label class-"brushRadioLabel">Circle</label>
+			    				<input id="squareRadio" class="brushRadio" name="brushShape" type="radio" value="square"></input>
+			    				<label class-"brushRadioLabel">Square</label>
+			    			</div>
+	    				</div>
+		    			<div class="preview">
+		    				<div id="brushSizePrev"></div>
+		    			</div>
 	    			</div>
 	    		</div>
 	    		<div id="setColor">
 	    			<h3 class="toolType">Brush Color</h3>
-	    			<div class="sliderDiv">
-	    				<span class="toolLabel">Red</span>
-	    				<input id="brushRed" class="brushSlider" type="range" min="0" max="255" step="1"></input>
-	    				<span id="brushRedVal"></span>
-	    			</div>
-	    			<div class="sliderDiv">
-	    				<span class="toolLabel">Green</span>
-	    				<input id="brushGreen" class="brushSlider" type="range" min="0" max="255" step="1"></input>
-	    				<span id="brushGreenVal"></span>
-	    			</div>
-	    			<div class="sliderDiv">
-	    				<span class="toolLabel">Blue</span>
-	    				<input id="brushBlue" class="brushSlider" type="range" min="0" max="255" step="1"></input>
-	    				<span id="brushBlueVal"></span>
+	    			<div class="toolSetting">
+	    				<div class="sliderSect">
+	    					<div class="sliderDiv">
+			    				<span class="toolLabel">Red</span>
+			    				<input id="brushRed" class="brushSlider" type="range" min="0" max="255" step="1"></input>
+			    				<span id="brushRedVal"></span>
+			    			</div>
+			    			<div class="sliderDiv">
+			    				<span class="toolLabel">Green</span>
+			    				<input id="brushGreen" class="brushSlider" type="range" min="0" max="255" step="1"></input>
+			    				<span id="brushGreenVal"></span>
+			    			</div>
+			    			<div class="sliderDiv">
+			    				<span class="toolLabel">Blue</span>
+			    				<input id="brushBlue" class="brushSlider" type="range" min="0" max="255" step="1"></input>
+			    				<span id="brushBlueVal"></span>
+			    			</div>
+	    				</div>
+	    				<div class="preview">
+		    				<div id="brushColorPrev"></div>
+		    			</div>
 	    			</div>
 	    		</div>
 	    	</section>
