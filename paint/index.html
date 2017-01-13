@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+	<head>
+		<meta charset="utf-8">
+		<title>Painting Project</title>
+	    <link rel="stylesheet" href="_css/style.css">
+	</head>
+	
+	<body>
+	    <header>
+	        <h1>Painting Project</h1>
+	    </header>
+	    <nav>
+	        <a href="..">Back to Front-End Projects</a>
+	    </nav>
+	    <section id="workArea">
+	    	<section id="tools">
+	    		<div id="setBrush">
+	    			<h3 class="toolType">Brush Style</h3>
+	    			<div class="sliderDiv">
+	    				<span class="toolLabel">Size</span>
+	    				<input id="brushSize" class="brushSlider" type="range" min="1" max="20" step="1"></input>
+	    				<span id="brushSizeVal"></span>
+	    			</div>
+	    		</div>
+	    		<div id="setColor">
+	    			<h3 class="toolType">Brush Color</h3>
+	    			<div class="sliderDiv">
+	    				<span class="toolLabel">Red</span>
+	    				<input id="brushRed" class="brushSlider" type="range" min="0" max="255" step="1"></input>
+	    				<span id="brushRedVal"></span>
+	    			</div>
+	    			<div class="sliderDiv">
+	    				<span class="toolLabel">Green</span>
+	    				<input id="brushGreen" class="brushSlider" type="range" min="0" max="255" step="1"></input>
+	    				<span id="brushGreenVal"></span>
+	    			</div>
+	    			<div class="sliderDiv">
+	    				<span class="toolLabel">Blue</span>
+	    				<input id="brushBlue" class="brushSlider" type="range" min="0" max="255" step="1"></input>
+	    				<span id="brushBlueVal"></span>
+	    			</div>
+	    		</div>
+	    	</section>
+    	    <section id="canvasArea">
+    	    	<canvas id="pad"></canvas>
+    	    	<div id="canvCont">
+    	    		<button id="clearBtn">CLEAR</button>
+    	    	</div>
+    	    </section>
+    	</section>
+		<footer>
+		    Brian LeVay (2017)
+		</footer>
+		
+		<script src="_js/index.js"></script>
+	</body>
+</html>
