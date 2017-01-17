@@ -1,3 +1,7 @@
+/////////////////////////////////////////////////////////////////
+// Global state and DOM references //
+/////////////////////////////////////////////////////////////////
+
 var state = {
     mouseHold: false,
     canvasWidth: 600,
@@ -7,129 +11,146 @@ var state = {
     brushColor: [0,0,255]
 };
 
+var dom = {
+    canv: document.getElementById("pad"),
+    ctx: document.getElementById("pad").getContext("2d"),
+    brushSizeElement: document.getElementById("brushSize"),
+    circleRadio: document.getElementById("circleRadio"),
+    squareRadio: document.getElementById("squareRadio"),
+    brushSizeDisplay: document.getElementById("brushSizeVal"),
+    brushSizePrev: document.getElementById("brushSizePrev"),
+    brushRedElement: document.getElementById("brushRed"),
+    brushRedDisplay: document.getElementById("brushRedVal"),
+    brushGreenElement: document.getElementById("brushGreen"),
+    brushGreenDisplay: document.getElementById("brushGreenVal"),
+    brushBlueElement: document.getElementById("brushBlue"),
+    brushBlueDisplay: document.getElementById("brushBlueVal"),
+    brushColorPrev: document.getElementById("brushColorPrev"),
+    clearBtn: document.getElementById("clearBtn")
+}
+
+/////////////////////////////////////////////////////////////////
+// Define setup function //
+/////////////////////////////////////////////////////////////////
+
 function setup() {
     // Initializes canvas //
-    var canv = document.getElementById("pad");
-    var ctx = canv.getContext("2d");
-    canv.width = state.canvasWidth;
-    canv.height = state.canvasHeight;
+    dom.canv.width = state.canvasWidth;
+    dom.canv.height = state.canvasHeight;
     
-    // Initializes paintbrush properties //
-    var brushSizeElement = document.getElementById("brushSize");
-    var circleRadio = document.getElementById("circleRadio");
-    var squareRadio = document.getElementById("squareRadio");
-    var brushSizeDisplay = document.getElementById("brushSizeVal");
-    var brushSizePrev = document.getElementById("brushSizePrev");
-    brushSizeElement.value = state.brushSize;
-    brushSizeDisplay.innerHTML = state.brushSize;
-    brushSizePrev.style.backgroundColor = toRGB(state.brushColor);
-    brushSizePrev.style.width = state.brushSize + "px";
-    brushSizePrev.style.height = state.brushSize + "px";
-    if (state.brushType == "circle") {
-        circleRadio.checked = true;
-        brushSizePrev.style.borderRadius = "100%";
-    }
-    else {
-        squareRadio.checked = true;
-        brushSizePrev.style.borderRadius = "0%";
-    }
-    
-    var brushRedElement = document.getElementById("brushRed");
-    var brushRedDisplay = document.getElementById("brushRedVal");
-    var brushGreenElement = document.getElementById("brushGreen");
-    var brushGreenDisplay = document.getElementById("brushGreenVal");
-    var brushBlueElement = document.getElementById("brushBlue");
-    var brushBlueDisplay = document.getElementById("brushBlueVal");
-    var brushColorPrev = document.getElementById("brushColorPrev");
-    brushRedElement.value = state.brushColor[0];
-    brushRedDisplay.innerHTML = state.brushColor[0];
-    brushGreenElement.value = state.brushColor[1];
-    brushGreenDisplay.innerHTML = state.brushColor[1];
-    brushBlueElement.value = state.brushColor[2];
-    brushBlueDisplay.innerHTML = state.brushColor[2];
-    brushColorPrev.style.backgroundColor = toRGB(state.brushColor);
-    
-    // Gets reference for "CLEAR" button //
-    var clearBtn = document.getElementById("clearBtn");
+    initializePaintBrush();
+    bindBrushStateListeners();
     
     // Mouse events for traditional desktop //
-    canv.addEventListener("mousedown", function(e){
+    dom.canv.addEventListener("mousedown", function(e){
         state.mouseHold = true;
         return;
     });
-    canv.addEventListener("mousemove", function(e){
+    dom.canv.addEventListener("mousemove", function(e){
         if (state.mouseHold) {
-            drawFreeHand(ctx, state.brushColor, state.brushType, state.brushSize, getMousePosition(e,canv));
+            drawFreeHand(dom.ctx, state.brushColor, state.brushType, state.brushSize, getMousePosition(e,dom.canv));
         }
         return;
     });
-    canv.addEventListener("mouseup", function(e){
+    dom.canv.addEventListener("mouseup", function(e){
         state.mouseHold = false;
         return;
     });
     
     // Touch events - got the e.touches[0] from Stack Overflow! //
-    canv.addEventListener("touchstart", function(e){
+    dom.canv.addEventListener("touchstart", function(e){
         state.mouseHold = true;
         return;
     });
-    canv.addEventListener("touchmove", function(e){
+    dom.canv.addEventListener("touchmove", function(e){
         if (state.mouseHold) {
-            drawFreeHand(ctx, state.brushColor, state.brushType, state.brushSize, getMousePosition(e.touches[0],canv));
+            drawFreeHand(dom.ctx, state.brushColor, state.brushType, state.brushSize, getMousePosition(e.touches[0],dom.canv));
         }
         return;
     });
-    canv.addEventListener("touchend", function(e){
+    dom.canv.addEventListener("touchend", function(e){
         state.mouseHold = false;
         return;
     });
     
     // Event for clearing the page //
-    clearBtn.addEventListener("click", function(){
-        clearCanvas(ctx);
+    dom.clearBtn.addEventListener("click", function(){
+        clearCanvas(dom.ctx);
         return;
     });
     
-    // Events for updating brush parameters //
-    brushSizeElement.addEventListener("change", function(){
-        state.brushSize = brushSizeElement.value;
-        brushSizeDisplay.innerHTML = state.brushSize;
-        brushSizePrev.style.width = state.brushSize + "px";
-        brushSizePrev.style.height = state.brushSize + "px";
+    return;
+}
+
+/////////////////////////////////////////////////////////////////
+// Define component functions //
+/////////////////////////////////////////////////////////////////
+
+function initializePaintBrush() {
+    // Initializes DOM paintbrush properties based on default state //
+    dom.brushSizeElement.value = state.brushSize;
+    dom.brushSizeDisplay.innerHTML = state.brushSize;
+    dom.brushSizePrev.style.backgroundColor = toRGB(state.brushColor);
+    dom.brushSizePrev.style.width = state.brushSize + "px";
+    dom.brushSizePrev.style.height = state.brushSize + "px";
+    if (state.brushType == "circle") {
+        dom.circleRadio.checked = true;
+        dom.brushSizePrev.style.borderRadius = "100%";
+    }
+    else {
+        dom.squareRadio.checked = true;
+        dom.brushSizePrev.style.borderRadius = "0%";
+    }
+    dom.brushRedElement.value = state.brushColor[0];
+    dom.brushRedDisplay.innerHTML = state.brushColor[0];
+    dom.brushGreenElement.value = state.brushColor[1];
+    dom.brushGreenDisplay.innerHTML = state.brushColor[1];
+    dom.brushBlueElement.value = state.brushColor[2];
+    dom.brushBlueDisplay.innerHTML = state.brushColor[2];
+    dom.brushColorPrev.style.backgroundColor = toRGB(state.brushColor);
+    return;
+}
+
+function bindBrushStateListeners() {
+    // Binding brush DOM elements to state parameters //
+    dom.brushSizeElement.addEventListener("change", function(){
+        state.brushSize = dom.brushSizeElement.value;
+        dom.brushSizeDisplay.innerHTML = state.brushSize;
+        dom.brushSizePrev.style.width = state.brushSize + "px";
+        dom.brushSizePrev.style.height = state.brushSize + "px";
         return;
     });
-    circleRadio.addEventListener("click", function(){
+    dom.circleRadio.addEventListener("click", function(){
         state.brushType = "circle";
-        brushSizePrev.style.borderRadius = "100%";
+        dom.brushSizePrev.style.borderRadius = "100%";
         return;
     });
-    squareRadio.addEventListener("click", function(){
+    dom.squareRadio.addEventListener("click", function(){
         state.brushType = "square";
-        brushSizePrev.style.borderRadius = "0%";
+        dom.brushSizePrev.style.borderRadius = "0%";
         return;
     });
-    brushRedElement.addEventListener("change", function(){
-        state.brushColor[0] = brushRedElement.value;
-        brushRedDisplay.innerHTML = state.brushColor[0];
-        brushColorPrev.style.backgroundColor = toRGB(state.brushColor);
-        brushSizePrev.style.backgroundColor = toRGB(state.brushColor);
+    dom.brushRedElement.addEventListener("change", function(){
+        state.brushColor[0] = dom.brushRedElement.value;
+        dom.brushRedDisplay.innerHTML = state.brushColor[0];
+        dom.brushColorPrev.style.backgroundColor = toRGB(state.brushColor);
+        dom.brushSizePrev.style.backgroundColor = toRGB(state.brushColor);
         return;
     });
-    brushGreenElement.addEventListener("change", function(){
-        state.brushColor[1] = brushGreenElement.value;
-        brushGreenDisplay.innerHTML = state.brushColor[1];
-        brushColorPrev.style.backgroundColor = toRGB(state.brushColor);
-        brushSizePrev.style.backgroundColor = toRGB(state.brushColor);
+    dom.brushGreenElement.addEventListener("change", function(){
+        state.brushColor[1] = dom.brushGreenElement.value;
+        dom.brushGreenDisplay.innerHTML = state.brushColor[1];
+        dom.brushColorPrev.style.backgroundColor = toRGB(state.brushColor);
+        dom.brushSizePrev.style.backgroundColor = toRGB(state.brushColor);
         return;
     });
-    brushBlueElement.addEventListener("change", function(){
-        state.brushColor[2] = brushBlueElement.value;
-        brushBlueDisplay.innerHTML = state.brushColor[2];
-        brushColorPrev.style.backgroundColor = toRGB(state.brushColor);
-        brushSizePrev.style.backgroundColor = toRGB(state.brushColor);
+    dom.brushBlueElement.addEventListener("change", function(){
+        state.brushColor[2] = dom.brushBlueElement.value;
+        dom.brushBlueDisplay.innerHTML = state.brushColor[2];
+        dom.brushColorPrev.style.backgroundColor = toRGB(state.brushColor);
+        dom.brushSizePrev.style.backgroundColor = toRGB(state.brushColor);
         return;
     });
-    
     return;
 }
 
@@ -176,6 +197,9 @@ function toRGB(color) {
     return "rgb(" + color[0] + "," + color[1] + "," + color[2] + ")";
 }
 
-/* This binds the appropriate functions on page load */
+/////////////////////////////////////////////////////////////////
+// Run the Setup function... //
+/////////////////////////////////////////////////////////////////
+
 setup();
 
