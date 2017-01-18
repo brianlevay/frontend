@@ -72,6 +72,7 @@ function setup() {
     });
     dom.addBtn.addEventListener("click", function(){
         svgToCanvas();
+        clearSVG();
         return;
     });
     return;
@@ -173,6 +174,7 @@ function bindCanvasListeners() {
     });
     dom.canv.addEventListener("touchmove", function(e){
         if (state.mouseHold) {
+            e.preventDefault();
             drawFreeHand(getCanvasPosition(e.touches[0],dom.canv));
         }
         return;
@@ -248,12 +250,12 @@ function drawShape(position) {
         else {
             shape.setAttribute("fill", "none");
         }
-        shape.setAttribute("id",state.numShapes);
+        shape.setAttribute("id","s" + state.numShapes);
         shape.setAttribute("d",dStr);
         dom.svg.appendChild(shape);
     }
     else {
-        shape = document.getElementById(state.numShapes);
+        shape = document.getElementById("s" + state.numShapes);
         dStr = shape.getAttribute("d");
         dStr += " L" + Math.round(position[0]) + "," + Math.round(position[1]);
         shape.setAttribute("d",dStr);
@@ -263,7 +265,7 @@ function drawShape(position) {
 
 function closeLastShape() {
     if (state.isNewShape === false) {
-        var shape = document.getElementById(state.numShapes);
+        var shape = document.getElementById("s" + state.numShapes);
         var dStr = shape.getAttribute("d");
         var dStrParts = dStr.split(" ");
         if (dStrParts.length > 1) {
@@ -274,14 +276,17 @@ function closeLastShape() {
 }
 
 function svgToCanvas() {
+    //took this code from MDN: "Drawing DOM objects into a canvas" //
     var xml = new XMLSerializer().serializeToString(dom.svg);
-    var svg64 = btoa(xml);
-    console.log("btoa called");
-    //var b64 = 'data:image/svg+xml;base64,';
-    //var image64 = b64 + svg64;
-    //var img = new Image();
-    //img.src = image64;
-    //dom.ctx.drawImage(img, 0,0);
+    var DOMURL = window.URL || window.webkitURL || window;
+    var img = new Image();
+    var data = new Blob([xml], {type: 'image/svg+xml'});
+    var url = DOMURL.createObjectURL(data);
+    img.onload = function(){
+        dom.ctx.drawImage(img,0,0);
+        DOMURL.revokeObjectURL(url);
+    };
+    img.src = url;
 }
 
 function clearCanvas() {
@@ -290,6 +295,16 @@ function clearCanvas() {
     dom.ctx.rect(0,0,state.canvasWidth,state.canvasHeight);
     dom.ctx.closePath();
     dom.ctx.fill();
+    return;
+}
+
+function clearSVG() {
+    var shape;
+    for (var i = 1; i <= state.numShapes; i++) {
+        shape = document.getElementById("s" + i);
+        shape.remove();
+    }
+    state.numShapes = 0;
     return;
 }
 
