@@ -13,7 +13,8 @@ var state = {
     numShapes: 0,
     lineThickness: 5,
     lineColor: [0,0,0],
-    shapeColor: [0,255,0]
+    shapeColor: [0,255,0],
+    isFilled: true
 };
 
 var dom = {
@@ -33,8 +34,10 @@ var dom = {
     brushColorPrev: document.getElementById("brushColorPrev"),
     clearBtn: document.getElementById("clearBtn"),
     svg: document.getElementById("trace"),
-    finishBtn: document.getElementById("finishPath")
-}
+    closeBtn: document.getElementById("closePath"),
+    finishBtn: document.getElementById("finishShape"),
+    addBtn: document.getElementById("addToCanvas")
+};
 
 /////////////////////////////////////////////////////////////////
 // Define setup function //
@@ -53,12 +56,24 @@ function setup() {
     
     bindSvgListeners();
     
-    // Event for clearing the page //
+    // Events for buttons //
     dom.clearBtn.addEventListener("click", function(){
-        clearCanvas(dom.ctx);
+        clearCanvas();
         return;
     });
-    
+    dom.closeBtn.addEventListener("click", function(){
+        closeLastShape();
+        state.isNewShape = true;
+        return;
+    });
+    dom.finishBtn.addEventListener("click", function(){
+        state.isNewShape = true;
+        return;
+    });
+    dom.addBtn.addEventListener("click", function(){
+        svgToCanvas();
+        return;
+    });
     return;
 }
 
@@ -142,7 +157,7 @@ function bindCanvasListeners() {
     });
     dom.canv.addEventListener("mousemove", function(e){
         if (state.mouseHold) {
-            drawFreeHand(dom.ctx, state.brushColor, state.brushType, state.brushSize, getCanvasPosition(e,dom.canv));
+            drawFreeHand(getCanvasPosition(e,dom.canv));
         }
         return;
     });
@@ -158,7 +173,7 @@ function bindCanvasListeners() {
     });
     dom.canv.addEventListener("touchmove", function(e){
         if (state.mouseHold) {
-            drawFreeHand(dom.ctx, state.brushColor, state.brushType, state.brushSize, getCanvasPosition(e.touches[0],dom.canv));
+            drawFreeHand(getCanvasPosition(e.touches[0],dom.canv));
         }
         return;
     });
@@ -172,33 +187,13 @@ function bindCanvasListeners() {
 function bindSvgListeners() {
     // Mouse events for traditional desktop //
     dom.svg.addEventListener("mouseup", function(e){
-        var shape;
-        var dStr;
-        var pos = getSVGPosition(e, dom.svg);
-        if (state.isNewShape) {
-            state.numShapes += 1;
-            state.isNewShape = false;
-            dStr = "M" + Math.round(pos[0]) + "," + Math.round(pos[1]);
-            shape = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            shape.setAttribute("stroke", toRGB(state.lineColor));
-            shape.setAttribute("stroke-width", state.lineWidth);
-            shape.setAttribute("fill", toRGB(state.shapeColor));
-            shape.setAttribute("id",state.numShapes);
-            shape.setAttribute("d",dStr);
-            dom.svg.appendChild(shape);
-        }
-        else {
-            shape = document.getElementById(state.numShapes);
-            dStr = shape.getAttribute("d");
-            dStr += " L" + Math.round(pos[0]) + "," + Math.round(pos[1]);
-            shape.setAttribute("d",dStr);
-        }
+        drawShape(getSVGPosition(e, dom.svg));
         return;
     });
     
     // Touch events - got the e.touches[0] from Stack Overflow! //
     dom.svg.addEventListener("touchend", function(e){
-        
+        drawShape(getSVGPosition(e.touches[0], dom.svg));
         return;
     });
     return;
@@ -217,36 +212,84 @@ function getSVGPosition(e, svg) {
     return [X,Y];
 }
 
-function drawFreeHand(context, color, shape, thickness, center) {
-    context.fillStyle = toRGB(color);
-    if (shape == "circle") {
-        var rad = Math.round(thickness/2);
-        context.beginPath();
-        context.arc(center[0],center[1],rad,0,2.0*Math.PI);
-        context.closePath();
-        context.fill();
-        return;
+function drawFreeHand(center) {
+    dom.ctx.fillStyle = toRGB(state.brushColor);
+    if (state.brushType == "circle") {
+        var rad = Math.round((state.brushSize)/2);
+        dom.ctx.beginPath();
+        dom.ctx.arc(center[0],center[1],rad,0,2.0*Math.PI);
+        dom.ctx.closePath();
+        dom.ctx.fill();
     }
-    else if (shape == "square") {
-        var cornerX = center[0] - Math.round(thickness/2);
-        var cornerY = center[1] - Math.round(thickness/2);
-        context.beginPath();
-        context.rect(cornerX,cornerY,thickness,thickness);
-        context.closePath();
-        context.fill();
-        return;
+    else if (state.brushType == "square") {
+        var cornerX = center[0] - Math.round((state.brushSize)/2);
+        var cornerY = center[1] - Math.round((state.brushSize)/2);
+        dom.ctx.beginPath();
+        dom.ctx.rect(cornerX,cornerY,state.brushSize,state.brushSize);
+        dom.ctx.closePath();
+        dom.ctx.fill();
+    }
+    return;
+}
+
+function drawShape(position) {
+    var shape;
+    var dStr;
+    if (state.isNewShape) {
+        state.numShapes += 1;
+        state.isNewShape = false;
+        dStr = "M" + Math.round(position[0]) + "," + Math.round(position[1]);
+        shape = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        shape.setAttribute("stroke", toRGB(state.lineColor));
+        shape.setAttribute("stroke-width", state.lineThickness);
+        if (state.isFilled) {
+            shape.setAttribute("fill", toRGB(state.shapeColor));
+        }
+        else {
+            shape.setAttribute("fill", "none");
+        }
+        shape.setAttribute("id",state.numShapes);
+        shape.setAttribute("d",dStr);
+        dom.svg.appendChild(shape);
     }
     else {
-        return;
+        shape = document.getElementById(state.numShapes);
+        dStr = shape.getAttribute("d");
+        dStr += " L" + Math.round(position[0]) + "," + Math.round(position[1]);
+        shape.setAttribute("d",dStr);
+    }
+    return;
+}
+
+function closeLastShape() {
+    if (state.isNewShape === false) {
+        var shape = document.getElementById(state.numShapes);
+        var dStr = shape.getAttribute("d");
+        var dStrParts = dStr.split(" ");
+        if (dStrParts.length > 1) {
+            dStr += " Z";
+            shape.setAttribute("d",dStr);
+        }
     }
 }
 
-function clearCanvas(context) {
-    context.fillStyle = "#FFFFFF";
-    context.beginPath();
-    context.rect(0,0,state.canvasWidth,state.canvasHeight);
-    context.closePath();
-    context.fill();
+function svgToCanvas() {
+    var xml = new XMLSerializer().serializeToString(dom.svg);
+    var svg64 = btoa(xml);
+    console.log("btoa called");
+    //var b64 = 'data:image/svg+xml;base64,';
+    //var image64 = b64 + svg64;
+    //var img = new Image();
+    //img.src = image64;
+    //dom.ctx.drawImage(img, 0,0);
+}
+
+function clearCanvas() {
+    dom.ctx.fillStyle = "#FFFFFF";
+    dom.ctx.beginPath();
+    dom.ctx.rect(0,0,state.canvasWidth,state.canvasHeight);
+    dom.ctx.closePath();
+    dom.ctx.fill();
     return;
 }
 
