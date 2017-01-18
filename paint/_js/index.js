@@ -8,7 +8,12 @@ var state = {
     canvasHeight: 400,
     brushType: "square",
     brushSize: 5,
-    brushColor: [0,0,255]
+    brushColor: [0,0,255],
+    isNewShape: true,
+    numShapes: 0,
+    lineThickness: 5,
+    lineColor: [0,0,0],
+    shapeColor: [0,255,0]
 };
 
 var dom = {
@@ -26,7 +31,9 @@ var dom = {
     brushBlueElement: document.getElementById("brushBlue"),
     brushBlueDisplay: document.getElementById("brushBlueVal"),
     brushColorPrev: document.getElementById("brushColorPrev"),
-    clearBtn: document.getElementById("clearBtn")
+    clearBtn: document.getElementById("clearBtn"),
+    svg: document.getElementById("trace"),
+    finishBtn: document.getElementById("finishPath")
 }
 
 /////////////////////////////////////////////////////////////////
@@ -34,44 +41,17 @@ var dom = {
 /////////////////////////////////////////////////////////////////
 
 function setup() {
-    // Initializes canvas //
-    dom.canv.width = state.canvasWidth;
-    dom.canv.height = state.canvasHeight;
+    // Initializes canvas and svg //
+    dom.canv.setAttribute("width", state.canvasWidth);
+    dom.canv.setAttribute("height", state.canvasHeight);
+    dom.svg.setAttribute("width", state.canvasWidth);
+    dom.svg.setAttribute("height", state.canvasHeight);
     
     initializePaintBrush();
     bindBrushStateListeners();
+    bindCanvasListeners();
     
-    // Mouse events for traditional desktop //
-    dom.canv.addEventListener("mousedown", function(e){
-        state.mouseHold = true;
-        return;
-    });
-    dom.canv.addEventListener("mousemove", function(e){
-        if (state.mouseHold) {
-            drawFreeHand(dom.ctx, state.brushColor, state.brushType, state.brushSize, getMousePosition(e,dom.canv));
-        }
-        return;
-    });
-    dom.canv.addEventListener("mouseup", function(e){
-        state.mouseHold = false;
-        return;
-    });
-    
-    // Touch events - got the e.touches[0] from Stack Overflow! //
-    dom.canv.addEventListener("touchstart", function(e){
-        state.mouseHold = true;
-        return;
-    });
-    dom.canv.addEventListener("touchmove", function(e){
-        if (state.mouseHold) {
-            drawFreeHand(dom.ctx, state.brushColor, state.brushType, state.brushSize, getMousePosition(e.touches[0],dom.canv));
-        }
-        return;
-    });
-    dom.canv.addEventListener("touchend", function(e){
-        state.mouseHold = false;
-        return;
-    });
+    bindSvgListeners();
     
     // Event for clearing the page //
     dom.clearBtn.addEventListener("click", function(){
@@ -154,9 +134,86 @@ function bindBrushStateListeners() {
     return;
 }
 
-function getMousePosition(e, canvas) {
+function bindCanvasListeners() {
+    // Mouse events for traditional desktop //
+    dom.canv.addEventListener("mousedown", function(e){
+        state.mouseHold = true;
+        return;
+    });
+    dom.canv.addEventListener("mousemove", function(e){
+        if (state.mouseHold) {
+            drawFreeHand(dom.ctx, state.brushColor, state.brushType, state.brushSize, getCanvasPosition(e,dom.canv));
+        }
+        return;
+    });
+    dom.canv.addEventListener("mouseup", function(e){
+        state.mouseHold = false;
+        return;
+    });
+    
+    // Touch events - got the e.touches[0] from Stack Overflow! //
+    dom.canv.addEventListener("touchstart", function(e){
+        state.mouseHold = true;
+        return;
+    });
+    dom.canv.addEventListener("touchmove", function(e){
+        if (state.mouseHold) {
+            drawFreeHand(dom.ctx, state.brushColor, state.brushType, state.brushSize, getCanvasPosition(e.touches[0],dom.canv));
+        }
+        return;
+    });
+    dom.canv.addEventListener("touchend", function(e){
+        state.mouseHold = false;
+        return;
+    });
+    return;
+}
+
+function bindSvgListeners() {
+    // Mouse events for traditional desktop //
+    dom.svg.addEventListener("mouseup", function(e){
+        var shape;
+        var dStr;
+        var pos = getSVGPosition(e, dom.svg);
+        if (state.isNewShape) {
+            state.numShapes += 1;
+            state.isNewShape = false;
+            dStr = "M" + Math.round(pos[0]) + "," + Math.round(pos[1]);
+            shape = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            shape.setAttribute("stroke", toRGB(state.lineColor));
+            shape.setAttribute("stroke-width", state.lineWidth);
+            shape.setAttribute("fill", toRGB(state.shapeColor));
+            shape.setAttribute("id",state.numShapes);
+            shape.setAttribute("d",dStr);
+            dom.svg.appendChild(shape);
+        }
+        else {
+            shape = document.getElementById(state.numShapes);
+            dStr = shape.getAttribute("d");
+            dStr += " L" + Math.round(pos[0]) + "," + Math.round(pos[1]);
+            shape.setAttribute("d",dStr);
+        }
+        return;
+    });
+    
+    // Touch events - got the e.touches[0] from Stack Overflow! //
+    dom.svg.addEventListener("touchend", function(e){
+        
+        return;
+    });
+    return;
+}
+
+function getCanvasPosition(e, canvas) {
     var X = e.pageX - canvas.offsetLeft;
     var Y = e.pageY - canvas.offsetTop;
+    return [X,Y];
+}
+
+function getSVGPosition(e, svg) {
+    var dim = svg.getBoundingClientRect();
+    var X = e.clientX - dim.left;
+    var Y = e.clientY - dim.top;
     return [X,Y];
 }
 
