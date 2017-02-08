@@ -13,8 +13,8 @@ var state = {
     numShapes: 0,
     lineThickness: 5,
     lineColor: [0,0,0],
-    shapeColor: [0,255,0],
-    isFilled: true
+    fillColor: [0,255,0],
+    isShapeFilled: true
 };
 
 var dom = {
@@ -33,10 +33,30 @@ var dom = {
     brushBlueDisplay: document.getElementById("brushBlueVal"),
     brushColorPrev: document.getElementById("brushColorPrev"),
     clearBtn: document.getElementById("clearBtn"),
+    
     svg: document.getElementById("trace"),
     closeBtn: document.getElementById("closePath"),
     finishBtn: document.getElementById("finishShape"),
-    addBtn: document.getElementById("addToCanvas")
+    addBtn: document.getElementById("addToCanvas"),
+    shapeThicknessElement: document.getElementById("shapeLineThickness"),
+    shapeThicknessDisplay: document.getElementById("shapeLineThicknessVal"),
+    shapeLineStylePrev: document.getElementById("shapeLineStylePrev"),
+    shapeLineRedElement: document.getElementById("shapeLineRed"),
+    shapeLineRedDisplay: document.getElementById("shapeLineRedVal"),
+    shapeLineGreenElement: document.getElementById("shapeLineGreen"),
+    shapeLineGreenDisplay: document.getElementById("shapeLineGreenVal"),
+    shapeLineBlueElement: document.getElementById("shapeLineBlue"),
+    shapeLineBlueDisplay: document.getElementById("shapeLineBlueVal"),
+    shapeLineColorPrev: document.getElementById("shapeLineColorPrev"),
+    emptyRadio: document.getElementById("emptyRadio"),
+    filledRadio: document.getElementById("filledRadio"),
+    shapeFillRedElement: document.getElementById("shapeFillRed"),
+    shapeFillRedDisplay: document.getElementById("shapeFillRedVal"),
+    shapeFillGreenElement: document.getElementById("shapeFillGreen"),
+    shapeFillGreenDisplay: document.getElementById("shapeFillGreenVal"),
+    shapeFillBlueElement: document.getElementById("shapeFillBlue"),
+    shapeFillBlueDisplay: document.getElementById("shapeFillBlueVal"),
+    shapeFillPrev: document.getElementById("shapeFillPrev")
 };
 
 /////////////////////////////////////////////////////////////////
@@ -54,6 +74,8 @@ function setup() {
     bindBrushStateListeners();
     bindCanvasListeners();
     
+    initializeShape();
+    bindShapeStateListeners();
     bindSvgListeners();
     
     // Events for buttons //
@@ -104,6 +126,43 @@ function initializePaintBrush() {
     dom.brushBlueElement.value = state.brushColor[2];
     dom.brushBlueDisplay.innerHTML = state.brushColor[2];
     dom.brushColorPrev.style.backgroundColor = toRGB(state.brushColor);
+    return;
+}
+
+function initializeShape() {
+    // Initializes DOM shape properties based on default state //
+    dom.shapeThicknessElement.value = state.lineThickness;
+    dom.shapeThicknessDisplay.innerHTML = state.lineThickness;
+    dom.shapeLineStylePrev.style.backgroundColor = toRGB(state.lineColor);
+    dom.shapeLineStylePrev.style.width = "100%";
+    dom.shapeLineStylePrev.style.height = state.lineThickness + "px";
+    
+    dom.shapeLineRedElement.value = state.lineColor[0];
+    dom.shapeLineRedDisplay.innerHTML = state.lineColor[0];
+    dom.shapeLineGreenElement.value = state.lineColor[1];
+    dom.shapeLineGreenDisplay.innerHTML = state.lineColor[1];
+    dom.shapeLineBlueElement.value = state.lineColor[2];
+    dom.shapeLineBlueDisplay.innerHTML = state.lineColor[2];
+    dom.shapeLineColorPrev.style.backgroundColor = toRGB(state.lineColor);
+    
+    dom.shapeFillRedElement.value = state.fillColor[0];
+    dom.shapeFillRedDisplay.innerHTML = state.fillColor[0];
+    dom.shapeFillGreenElement.value = state.fillColor[1];
+    dom.shapeFillGreenDisplay.innerHTML = state.fillColor[1];
+    dom.shapeFillBlueElement.value = state.fillColor[2];
+    dom.shapeFillBlueDisplay.innerHTML = state.fillColor[2];
+    
+    if (state.isShapeFilled == true) {
+        dom.filledRadio.checked = true;
+        dom.shapeFillPrev.style.backgroundColor = toRGB(state.fillColor);
+        dom.shapeFillPrev.innerHTML = "";
+    }
+    else {
+        dom.emptyRadio.checked = true;
+        dom.shapeFillPrev.style.backgroundColor = "white";
+        dom.shapeFillPrev.innerHTML = "none";
+    }
+    
     return;
 }
 
@@ -186,6 +245,74 @@ function bindCanvasListeners() {
     return;
 }
 
+function bindShapeStateListeners() {
+    // Binding shape DOM elements to state parameters //
+    dom.shapeThicknessElement.addEventListener("change", function(){
+        state.lineThickness = dom.shapeThicknessElement.value;
+        dom.shapeThicknessDisplay.innerHTML = state.lineThickness;
+        dom.shapeLineStylePrev.style.height = state.lineThickness + "px";
+        return;
+    });
+    dom.shapeLineRedElement.addEventListener("change", function(){
+        state.lineColor[0] = dom.shapeLineRedElement.value;
+        dom.shapeLineRedDisplay.innerHTML = state.lineColor[0];
+        dom.shapeLineColorPrev.style.backgroundColor = toRGB(state.lineColor);
+        dom.shapeLineStylePrev.style.backgroundColor = toRGB(state.lineColor);
+        return;
+    });
+    dom.shapeLineGreenElement.addEventListener("change", function(){
+        state.lineColor[1] = dom.shapeLineGreenElement.value;
+        dom.shapeLineGreenDisplay.innerHTML = state.lineColor[1];
+        dom.shapeLineColorPrev.style.backgroundColor = toRGB(state.lineColor);
+        dom.shapeLineStylePrev.style.backgroundColor = toRGB(state.lineColor);
+        return;
+    });
+    dom.shapeLineBlueElement.addEventListener("change", function(){
+        state.lineColor[2] = dom.shapeLineBlueElement.value;
+        dom.shapeLineBlueDisplay.innerHTML = state.lineColor[2];
+        dom.shapeLineColorPrev.style.backgroundColor = toRGB(state.lineColor);
+        dom.shapeLineStylePrev.style.backgroundColor = toRGB(state.lineColor);
+        return;
+    });
+    dom.filledRadio.addEventListener("click", function(){
+        state.isShapeFilled = true;
+        dom.shapeFillPrev.style.backgroundColor = toRGB(state.fillColor);
+        dom.shapeFillPrev.innerHTML = "";
+        return;
+    });
+    dom.emptyRadio.addEventListener("click", function(){
+        state.isShapeFilled = false;
+        dom.shapeFillPrev.style.backgroundColor = "white";
+        dom.shapeFillPrev.innerHTML = "none";
+        return;
+    });
+    dom.shapeFillRedElement.addEventListener("change", function(){
+        state.fillColor[0] = dom.shapeFillRedElement.value;
+        dom.shapeFillRedDisplay.innerHTML = state.fillColor[0];
+        if (state.isShapeFilled) {
+            dom.shapeFillPrev.style.backgroundColor = toRGB(state.fillColor);
+        }
+        return;
+    });
+    dom.shapeFillGreenElement.addEventListener("change", function(){
+        state.fillColor[1] = dom.shapeFillGreenElement.value;
+        dom.shapeFillGreenDisplay.innerHTML = state.fillColor[1];
+        if (state.isShapeFilled) {
+            dom.shapeFillPrev.style.backgroundColor = toRGB(state.fillColor);
+        }
+        return;
+    });
+    dom.shapeFillBlueElement.addEventListener("change", function(){
+        state.fillColor[2] = dom.shapeFillBlueElement.value;
+        dom.shapeLineBlueDisplay.innerHTML = state.fillColor[2];
+        if (state.isShapeFilled) {
+            dom.shapeFillPrev.style.backgroundColor = toRGB(state.fillColor);
+        }
+        return;
+    });
+    return;
+}
+
 function bindSvgListeners() {
     // Mouse events for traditional desktop //
     dom.svg.addEventListener("mouseup", function(e){
@@ -244,8 +371,8 @@ function drawShape(position) {
         shape = document.createElementNS("http://www.w3.org/2000/svg", "path");
         shape.setAttribute("stroke", toRGB(state.lineColor));
         shape.setAttribute("stroke-width", state.lineThickness);
-        if (state.isFilled) {
-            shape.setAttribute("fill", toRGB(state.shapeColor));
+        if (state.isShapeFilled) {
+            shape.setAttribute("fill", toRGB(state.fillColor));
         }
         else {
             shape.setAttribute("fill", "none");

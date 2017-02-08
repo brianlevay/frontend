@@ -30,6 +30,23 @@
     height: 100%;
 }
 
+#shapeLineStylePrev {
+    position: relative;
+    margin: auto;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#shapeLineColorPrev {
+    width: 100%;
+    height: 100%;
+}
+
+#shapeFillPrev {
+    width: 100%;
+    height: 100%;
+}
+
 canvas {
     margin: 20px 0px;
     outline: 1px solid black;
@@ -38,4 +55,12 @@ canvas {
 svg {
     margin: 20px 0px;
     outline: 1px solid black;
+}
+
+#canvTools {
+    display: block;
+}
+
+#svgTools {
+    display: block;
 }
