@@ -17,15 +17,21 @@
 	    <section id="workArea">
     		<section id="canvasArea">
     	  		<canvas id="pad"></canvas>
-    	  		<div id="canvControls">
+    			<svg id="trace"></svg>
+    		</section>
+    		<section id="controls">
+    			<div id="canvControls">
     	  			<button id="clearBtn">CLEAR</button>
     			</div>
-    			<svg id="trace"></svg>
     			<div id="svgControls">
     				<button id="closePath">CLOSE PATH</button>
     				<button id="finishShape">FINISH SHAPE</button>
     				<button id="addToCanvas">ADD TO CANVAS</button>
     			</div>
+    		</section>
+    		<section id="typeOfDrawing">
+    			<button id="selectPainting">PAINTING</button>
+    			<button id="selectShapes">SHAPES</button>
     		</section>
     		<section id="tools">
     			<div id="canvTools">

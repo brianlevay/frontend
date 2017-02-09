@@ -3,8 +3,9 @@
 /////////////////////////////////////////////////////////////////
 
 var state = {
+    option: "painting",
     mouseHold: false,
-    canvasWidth: 600,
+    canvasWidth: 500,
     canvasHeight: 400,
     brushType: "square",
     brushSize: 5,
@@ -56,7 +57,16 @@ var dom = {
     shapeFillGreenDisplay: document.getElementById("shapeFillGreenVal"),
     shapeFillBlueElement: document.getElementById("shapeFillBlue"),
     shapeFillBlueDisplay: document.getElementById("shapeFillBlueVal"),
-    shapeFillPrev: document.getElementById("shapeFillPrev")
+    shapeFillPrev: document.getElementById("shapeFillPrev"),
+    
+    canvasArea: document.getElementById("canvasArea"),
+    canvControls: document.getElementById("canvControls"),
+    svgControls: document.getElementById("svgControls"),
+    canvTools: document.getElementById("canvTools"),
+    svgTools: document.getElementById("svgTools"),
+    selectPainting: document.getElementById("selectPainting"),
+    selectShapes: document.getElementById("selectShapes")
+    
 };
 
 /////////////////////////////////////////////////////////////////
@@ -69,6 +79,8 @@ function setup() {
     dom.canv.setAttribute("height", state.canvasHeight);
     dom.svg.setAttribute("width", state.canvasWidth);
     dom.svg.setAttribute("height", state.canvasHeight);
+    dom.canvasArea.style.height = state.canvasHeight + "px";
+    dom.canvasArea.style.width = state.canvasWidth + "px";
     
     initializePaintBrush();
     bindBrushStateListeners();
@@ -78,7 +90,18 @@ function setup() {
     bindShapeStateListeners();
     bindSvgListeners();
     
+    // Sets initial painting vs shapes visibilities //
+    changeToOption(state.option);
+    
     // Events for buttons //
+    dom.selectPainting.addEventListener("click", function(){
+        changeToOption("painting");
+        return;
+    });
+    dom.selectShapes.addEventListener("click", function(){
+        changeToOption("shapes");
+        return;
+    });
     dom.clearBtn.addEventListener("click", function(){
         clearCanvas();
         return;
@@ -95,6 +118,8 @@ function setup() {
     dom.addBtn.addEventListener("click", function(){
         svgToCanvas();
         clearSVG();
+        state.isNewShape = true;
+        changeToOption("painting");
         return;
     });
     return;
@@ -329,8 +354,10 @@ function bindSvgListeners() {
 }
 
 function getCanvasPosition(e, canvas) {
-    var X = e.pageX - canvas.offsetLeft;
-    var Y = e.pageY - canvas.offsetTop;
+    //var X = e.pageX - canvas.offsetLeft;
+    //var Y = e.pageY - canvas.offsetTop;
+    var X = e.layerX;
+    var Y = e.layerY;
     return [X,Y];
 }
 
@@ -437,6 +464,28 @@ function clearSVG() {
 
 function toRGB(color) {
     return "rgb(" + color[0] + "," + color[1] + "," + color[2] + ")";
+}
+
+function changeToOption(newOption) {
+    if (newOption == "painting") {
+        state.option = "painting";
+        dom.svg.style.zIndex = 1;
+        dom.svgControls.style.display = "none";
+        dom.svgTools.style.display = "none";
+        dom.canv.style.zIndex = 2;
+        dom.canvControls.style.display = "block";
+        dom.canvTools.style.display = "block";
+    }
+    else {
+        state.option = "shapes";
+        dom.svg.style.zIndex = 2;
+        dom.svgControls.style.display = "block";
+        dom.svgTools.style.display = "block";
+        dom.canv.style.zIndex = 1;
+        dom.canvControls.style.display = "none";
+        dom.canvTools.style.display = "none";
+    }
+    return;
 }
 
 /////////////////////////////////////////////////////////////////

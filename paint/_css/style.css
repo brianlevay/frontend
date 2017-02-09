@@ -47,14 +47,44 @@
     height: 100%;
 }
 
-canvas {
+#workArea {
+    position: relative;
+}
+
+#canvasArea {
+    display: block;
+    position: relative;
+    height: 100px;
+    width: 100px;
     margin: 20px 0px;
+}
+
+canvas {
+    position: absolute;
+    z-index: 2;
     outline: 1px solid black;
 }
 
 svg {
-    margin: 20px 0px;
+    position: absolute;
+    z-index: 1;
     outline: 1px solid black;
+}
+
+#controls {
+    display: block;
+}
+
+#typeOfDrawing {
+    display: block;
+}
+
+#canvControls {
+    display: block;
+}
+
+#svgControls {
+    display: block;
 }
 
 #canvTools {
