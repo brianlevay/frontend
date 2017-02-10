@@ -242,7 +242,7 @@ function bindCanvasListeners() {
     });
     dom.canv.addEventListener("mousemove", function(e){
         if (state.mouseHold) {
-            drawFreeHand(getCanvasPosition(e,dom.canv));
+            drawFreeHand(getPosition(e,dom.canv));
         }
         return;
     });
@@ -258,8 +258,8 @@ function bindCanvasListeners() {
     });
     dom.canv.addEventListener("touchmove", function(e){
         if (state.mouseHold) {
-            e.preventDefault();
-            drawFreeHand(getCanvasPosition(e.touches[0],dom.canv));
+            //e.preventDefault();
+            drawFreeHand(getPosition(e.touches[0],dom.canv));
         }
         return;
     });
@@ -341,28 +341,20 @@ function bindShapeStateListeners() {
 function bindSvgListeners() {
     // Mouse events for traditional desktop //
     dom.svg.addEventListener("mouseup", function(e){
-        drawShape(getSVGPosition(e, dom.svg));
+        drawShape(getPosition(e, dom.svg));
         return;
     });
     
     // Touch events - got the e.touches[0] from Stack Overflow! //
     dom.svg.addEventListener("touchend", function(e){
-        drawShape(getSVGPosition(e.touches[0], dom.svg));
+        drawShape(getPosition(e.touches[0], dom.svg));
         return;
     });
     return;
 }
 
-function getCanvasPosition(e, canvas) {
-    //var X = e.pageX - canvas.offsetLeft;
-    //var Y = e.pageY - canvas.offsetTop;
-    var X = e.layerX;
-    var Y = e.layerY;
-    return [X,Y];
-}
-
-function getSVGPosition(e, svg) {
-    var dim = svg.getBoundingClientRect();
+function getPosition(e, target) {
+    var dim = target.getBoundingClientRect();
     var X = e.clientX - dim.left;
     var Y = e.clientY - dim.top;
     return [X,Y];
