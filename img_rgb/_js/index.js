@@ -1,14 +1,23 @@
+// This maintains any state variables //
+
 var state_vals = {
     fileName: null,
-    coreTop: 0, coreBottom: 0, coreLeft: 0, coreRight: 0,
-    boundThickness: 10
-}
+    coreTopPx: 0, coreBottomPx: 0, coreLeftPx: 0, coreRightPx: 0,
+    boundThickness: 10, 
+    pointsInMM: []
+};
+
+// TOP LEVEL FUNCTION //
+// This function is called from the onchange for the file input //
 
 function handleFile(files) {
-    drawImage(files);
+    initializeImage(files);
+    return;
 }
 
-function drawImage(files) {
+// This function loads the image and resets the fields and sliders as needed //
+
+function initializeImage(files) {
     var canvas = document.getElementById('img_canvas');
     var ctx = canvas.getContext('2d');
     var imgNew = new Image();
@@ -19,27 +28,36 @@ function drawImage(files) {
         canvas.width = width;
         ctx.drawImage(imgNew, 0, 0);
         state_vals["fileName"] = files[0];
-        state_vals["coreBottom"] = height;
-        state_vals["coreRight"] = width;
+        state_vals["coreTopPx"] = 0;
+        state_vals["coreBottomPx"] = height;
+        state_vals["coreLeftPx"] = 0;
+        state_vals["coreRightPx"] = width;
         setSliderRanges();
         updateDivBounds();
         updateSliders();
         updateTxts();
         attachBoundListeners();
+        resetPointFields()
     };
     imgNew.src = window.URL.createObjectURL(files[0]);
+    return;
 }
+
+// This function adjusts the max slider pixel values to match the size of the newly loaded image //
 
 function setSliderRanges() {
     var topSlider = document.getElementById('topSlider');
     var bottomSlider = document.getElementById('bottomSlider');
     var leftSlider = document.getElementById('leftSlider');
     var rightSlider = document.getElementById('rightSlider');
-    topSlider.max = state_vals["coreBottom"];
-    bottomSlider.max = state_vals["coreBottom"];
-    leftSlider.max = state_vals["coreRight"];
-    rightSlider.max = state_vals["coreRight"];
+    topSlider.max = state_vals["coreBottomPx"];
+    bottomSlider.max = state_vals["coreBottomPx"];
+    leftSlider.max = state_vals["coreRightPx"];
+    rightSlider.max = state_vals["coreRightPx"];
+    return;
 }
+
+// These functions update the sliders, text boxes, and divs for the core boundary based on the state values //
 
 function updateDivBounds() {
     var topDiv = document.getElementById('imgTop');
@@ -47,8 +65,8 @@ function updateDivBounds() {
     var leftDiv = document.getElementById('imgLeft');
     var rightDiv = document.getElementById('imgRight');
     
-    var width = state_vals["coreRight"] - state_vals["coreLeft"];
-    var height = state_vals["coreBottom"] - state_vals["coreTop"];
+    var width = state_vals["coreRightPx"] - state_vals["coreLeftPx"];
+    var height = state_vals["coreBottomPx"] - state_vals["coreTopPx"];
     
     topDiv.style.width = (width+2*state_vals["boundThickness"]) + "px";
     topDiv.style.height = state_vals["boundThickness"] + "px";
@@ -59,14 +77,15 @@ function updateDivBounds() {
     rightDiv.style.width = state_vals["boundThickness"] + "px";
     rightDiv.style.height = (height+2*state_vals["boundThickness"]) + "px";
     
-    topDiv.style.left = (state_vals["coreLeft"]-state_vals["boundThickness"]) + "px";
-    topDiv.style.top = (state_vals["coreTop"]-state_vals["boundThickness"]) + "px";
-    bottomDiv.style.left = (state_vals["coreLeft"]-state_vals["boundThickness"]) + "px";
-    bottomDiv.style.top = state_vals["coreBottom"] + "px";
-    leftDiv.style.left = (state_vals["coreLeft"]-state_vals["boundThickness"]) + "px";
-    leftDiv.style.top = (state_vals["coreTop"]-state_vals["boundThickness"]) + "px";
-    rightDiv.style.left = state_vals["coreRight"] + "px";
-    rightDiv.style.top = (state_vals["coreTop"]-state_vals["boundThickness"]) + "px";
+    topDiv.style.left = (state_vals["coreLeftPx"]-state_vals["boundThickness"]) + "px";
+    topDiv.style.top = (state_vals["coreTopPx"]-state_vals["boundThickness"]) + "px";
+    bottomDiv.style.left = (state_vals["coreLeftPx"]-state_vals["boundThickness"]) + "px";
+    bottomDiv.style.top = state_vals["coreBottomPx"] + "px";
+    leftDiv.style.left = (state_vals["coreLeftPx"]-state_vals["boundThickness"]) + "px";
+    leftDiv.style.top = (state_vals["coreTopPx"]-state_vals["boundThickness"]) + "px";
+    rightDiv.style.left = state_vals["coreRightPx"] + "px";
+    rightDiv.style.top = (state_vals["coreTopPx"]-state_vals["boundThickness"]) + "px";
+    return;
 }
 
 function updateSliders() {
@@ -74,10 +93,11 @@ function updateSliders() {
     var bottomSlider = document.getElementById('bottomSlider');
     var leftSlider = document.getElementById('leftSlider');
     var rightSlider = document.getElementById('rightSlider');
-    topSlider.value = state_vals["coreTop"];
-    bottomSlider.value = state_vals["coreBottom"];
-    leftSlider.value = state_vals["coreLeft"];
-    rightSlider.value = state_vals["coreRight"];
+    topSlider.value = state_vals["coreTopPx"];
+    bottomSlider.value = state_vals["coreBottomPx"];
+    leftSlider.value = state_vals["coreLeftPx"];
+    rightSlider.value = state_vals["coreRightPx"];
+    return;
 }
 
 function updateTxts() {
@@ -85,11 +105,14 @@ function updateTxts() {
     var bottomTxt = document.getElementById('bottomTxt');
     var leftTxt = document.getElementById('leftTxt');
     var rightTxt = document.getElementById('rightTxt');
-    topTxt.value = state_vals["coreTop"];
-    bottomTxt.value = state_vals["coreBottom"];
-    leftTxt.value = state_vals["coreLeft"];
-    rightTxt.value = state_vals["coreRight"];
+    topTxt.value = state_vals["coreTopPx"];
+    bottomTxt.value = state_vals["coreBottomPx"];
+    leftTxt.value = state_vals["coreLeftPx"];
+    rightTxt.value = state_vals["coreRightPx"];
+    return;
 }
+
+// This function attaches the event handlers so that any slider or text change updates all boundary DOM elements as well as the state //
 
 function attachBoundListeners() {
     var topSlider = document.getElementById('topSlider');
@@ -102,46 +125,102 @@ function attachBoundListeners() {
     var rightTxt = document.getElementById('rightTxt');
     
     topSlider.onchange = function(){
-        updateFunction(topSlider, "coreTop", "coreBottom", "smaller");
+        updateBoundaries(topSlider, "coreTopPx", "coreBottomPx", "smaller");
     };
     bottomSlider.onchange = function(){
-        updateFunction(bottomSlider, "coreBottom", "coreTop", "larger");
+        updateBoundaries(bottomSlider, "coreBottomPx", "coreTopPx", "larger");
     };
     leftSlider.onchange = function(){
-        updateFunction(leftSlider, "coreLeft", "coreRight", "smaller");
+        updateBoundaries(leftSlider, "coreLeftPx", "coreRightPx", "smaller");
     };
     rightSlider.onchange = function(){
-        updateFunction(rightSlider, "coreRight", "coreLeft", "larger");
+        updateBoundaries(rightSlider, "coreRightPx", "coreLeftPx", "larger");
     };
     topTxt.onchange = function(){
-        updateFunction(topTxt, "coreTop", "coreBottom", "smaller");
+        updateBoundaries(topTxt, "coreTopPx", "coreBottomPx", "smaller");
     };
     bottomTxt.onchange = function(){
-        updateFunction(bottomTxt, "coreBottom", "coreTop", "larger");
+        updateBoundaries(bottomTxt, "coreBottomPx", "coreTopPx", "larger");
     };
     leftTxt.onchange = function(){
-        updateFunction(leftTxt, "coreLeft", "coreRight", "smaller");
+        updateBoundaries(leftTxt, "coreLeftPx", "coreRightPx", "smaller");
     };
     rightTxt.onchange = function(){
-        updateFunction(rightTxt, "coreRight", "coreLeft", "larger");
+        updateBoundaries(rightTxt, "coreRightPx", "coreLeftPx", "larger");
     };
+    return;
 }
 
-function updateFunction(element, boundary, opposite, constraint) {
-    if (constraint == "smaller") {
-        if (element.value < state_vals[opposite]) {
-            state_vals[boundary] = parseInt(element.value);
-        } else {
-            state_vals[boundary] = state_vals[opposite];
-        }
-    } else if (constraint == "larger") {
-        if (element.value > state_vals[opposite]) {
-            state_vals[boundary] = parseInt(element.value);
-        } else {
-            state_vals[boundary] = state_vals[opposite];
+// This function actually does the state and DOM element updates for the boundaries
+
+function updateBoundaries(element, boundary, opposite, constraint) {
+    if (isNaN(Number(element.value)) == false) {
+        if (constraint == "smaller") {
+            if (element.value < state_vals[opposite]) {
+                state_vals[boundary] = parseInt(element.value);
+            } else {
+                state_vals[boundary] = state_vals[opposite];
+            }
+        } else if (constraint == "larger") {
+            if (element.value > state_vals[opposite]) {
+                state_vals[boundary] = parseInt(element.value);
+            } else {
+                state_vals[boundary] = state_vals[opposite];
+            }
         }
     }
     updateSliders();
     updateTxts();
     updateDivBounds();
+    return;
+}
+
+// This clears out all text areas when a new image is loaded //
+
+function resetPointFields() {
+    var addedPoints = document.getElementById("addedPoints");
+    var skippedPoints = document.getElementById("skippedPoints");
+    var specialAreas = document.getElementById("specialAreas");
+    var results = document.getElementById("results");
+    
+    addedPoints.value = "";
+    skippedPoints.value = "";
+    specialAreas.value = "";
+    results.value = "";
+    state_vals["pointsInMM"] = [];
+    return;
+}
+
+// TOP LEVEL FUNCTION //
+// This function is the one bound to the onclick event for "Generate Points" //
+
+function generatePoints() {
+    generatePointsInMM();
+    return;
+}
+
+// This function reads the input text boxes and generates the list of body-centered points, in millimeters
+
+function generatePointsInMM() {
+    var downCoreLength = document.getElementById("lengthTxt").value;
+    var downCoreSpacing = document.getElementById("spacingTxt").value;
+    var crossCorePosition = document.getElementById("lateralTxt").value;
+    var skipFirst = document.getElementById("skipFirstCheck").value;
+    
+    var addedPoints = document.getElementById("addedPoints").value;
+    var skippedPoints = document.getElementById("skippedPoints").value;
+    var specialAreas = document.getElementById("specialAreas").value;
+    
+    var totalLength = Number(downCoreLength);
+    var stepSize = Number(downCoreSpacing);
+    var laterPos = Number(crossCorePosition);
+
+    var addedList = addedPoints.split(/[\n,]+/).map(Number);
+    var skippedList = skippedPoints.split(/[\n,]+/).map(Number);
+    var specialList = specialAreas.split(/[\n,]+/);
+    
+    // NEED TO CHECK IF ANY OF THE ENTRIES ARE NON-NUMERIC //
+    
+    console.log(addedList);
+    return;
 }

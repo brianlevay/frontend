@@ -16,11 +16,11 @@
 	    </nav>
 	    <section id="workArea">
 	    	<section id="controls">
-	    		<section id="fileSelection">
+	    		<section id="fileSelection" class="ctrlsSubsection">
 	    			<div class="heading">Select an image:</div>
 	    			<input type="file" id="input_file" onchange="handleFile(this.files)">
 	    		</section>
-	    		<section id="edgeSelection">
+	    		<section id="edgeSelection" class="ctrlsSubsection">
 	    			<div class="heading">Define the edges of the image:</div>
 	    			<div class="boundGroup">
 	    				<label>Left</label>
@@ -43,6 +43,55 @@
 	    				<input type="text" id="bottomTxt">
 	    			</div>
 	    		</section>
+	    		<section id="gridSetup" class="ctrlsSubsection">
+	    			<div class="heading">Define the core size and point spacing (mm):</div>
+	    			<div class="gridGroup">
+	    				<label>Down-Core Length</label>
+	    				<input type="text" id="lengthTxt">
+	    			</div>
+	    			<div class="gridGroup">
+	    				<label>Cross-Core Width</label>
+	    				<input type="text" id="widthTxt">
+	    			</div>
+	    			<div class="gridGroup">
+	    				<label>Down-Core Spacing</label>
+	    				<input type="text" id="spacingTxt">
+	    			</div>
+	    			<div class="gridGroup">
+	    				<label>Cross-Core Position</label>
+	    				<input type="text" id="lateralTxt">
+	    			</div>
+	    			<div class="gridGroup">
+	    				<label>Down-Core Spot Size</label>
+	    				<input type="text" id="downSpotTxt">
+	    			</div>
+	    			<div class="gridGroup">
+	    				<label>Cross-Core Spot Size</label>
+	    				<input type="text" id="crossSpotTxt">
+	    			</div>
+	    			<div class="gridGroup">
+	    				<label>Skip the first point in an interval?</label>
+	    				<input type="checkbox" id="skipFirstCheck">
+	    			</div>
+	    			<section class="extraPoints">
+	    				<div class="extraPtsGroup">
+	    					<div>Extra points to add</div>
+	    					<div>(use commas or hit enter to separate)</div>
+	    					<textarea id="addedPoints"></textarea>
+	    				</div>
+	    				<div class="extraPtsGroup">
+	    					<div>Points to skip</div>
+	    					<div>(use commas or hit enter to separate)</div>
+	    					<textarea id="skippedPoints"></textarea>
+	    				</div>
+	    				<div class="extraPtsGroup">
+	    					<div>Special areas [Start-End-Step]</div>
+	    					<div>(use commas or hit enter to separate)</div>
+	    					<textarea id="specialAreas"></textarea>
+	    				</div>
+	    			</section>
+	    			<input type="button" id="generatePts" value="Generate Points" onclick="generatePoints()">
+	    		</section>
 	    	</section>
     		<section id="canvasArea">
     			<div id="imgTop" class="bounds"></div>
@@ -50,6 +99,10 @@
     			<div id="imgLeft" class="bounds"></div>
     			<div id="imgRight" class="bounds"></div>
     	  		<canvas id="img_canvas"></canvas>
+    		</section>
+    		<section id="resultsArea">
+    			<div>Results</div>
+    			<textarea id="results" readonly="true"></textarea>
     		</section>
     	</section>
 		<footer>
