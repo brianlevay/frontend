@@ -1,0 +1,16 @@
+#canvasArea {
+    position: relative;
+}
+
+.bounds {
+    position: absolute;
+    background-color: green;
+}
+
+#workArea {
+    margin: 20px;
+}
+
+#controls {
+    margin: 50px 0px;
+}

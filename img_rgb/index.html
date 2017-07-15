@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+	<head>
+		<meta charset="utf-8">
+		<title>RGB Extraction</title>
+	 	<link rel="stylesheet" href="_css/style.css">
+	</head>
+	
+	<body>
+	    <header>
+	    	<h1>RGB Extraction from Core Images</h1>
+	    </header>
+	    <nav>
+	    	<a href="..">Back to Front-End Projects</a>
+	    </nav>
+	    <section id="workArea">
+	    	<section id="controls">
+	    		<section id="fileSelection">
+	    			<div class="heading">Select an image:</div>
+	    			<input type="file" id="input_file" onchange="handleFile(this.files)">
+	    		</section>
+	    		<section id="edgeSelection">
+	    			<div class="heading">Define the edges of the image:</div>
+	    			<div class="boundGroup">
+	    				<label>Left</label>
+	    				<input type="range" id="leftSlider">
+	    				<input type="text" id="leftTxt">
+	    			</div>
+	    			<div class="boundGroup">
+	    				<label>Right</label>
+	    				<input type="range" id="rightSlider">
+	    				<input type="text" id="rightTxt">
+	    			</div>
+	    			<div class="boundGroup">
+	    				<label>Top</label>
+	    				<input type="range" id="topSlider">
+	    				<input type="text" id="topTxt">
+	    			</div>
+	    			<div class="boundGroup">
+	    				<label>Bottom</label>
+	    				<input type="range" id="bottomSlider">
+	    				<input type="text" id="bottomTxt">
+	    			</div>
+	    		</section>
+	    	</section>
+    		<section id="canvasArea">
+    			<div id="imgTop" class="bounds"></div>
+    			<div id="imgBottom" class="bounds"></div>
+    			<div id="imgLeft" class="bounds"></div>
+    			<div id="imgRight" class="bounds"></div>
+    	  		<canvas id="img_canvas"></canvas>
+    		</section>
+    	</section>
+		<footer>
+			Brian LeVay (2017)
+		</footer>
+		<script src="_js/index.js"></script>
+	</body>
+</html>
