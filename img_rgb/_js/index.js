@@ -21,8 +21,8 @@ function initializeImage(files) {
     var ctx = canvas.getContext('2d');
     var imgNew = new Image();
     imgNew.onload = function() {
-        var height = parseInt(imgNew.height)
-        var width = parseInt(imgNew.width)
+        var height = parseInt(imgNew.height);
+        var width = parseInt(imgNew.width);
         canvas.height = height;
         canvas.width = width;
         ctx.drawImage(imgNew, 0, 0);
@@ -36,7 +36,9 @@ function initializeImage(files) {
         updateSliders();
         updateTxts();
         attachBoundListeners();
-        resetPointFields()
+        resetPointFields();
+        var generateBtn = document.getElementById('generatePts');
+        generateBtn.disabled = false;
     };
     imgNew.src = window.URL.createObjectURL(files[0]);
     return;
@@ -186,12 +188,12 @@ function resetPointFields() {
     skippedPoints.value = "";
     specialAreas.value = "";
     results.value = "";
-    state_vals["pointsInMM"] = [];
     return;
 }
 
 // TOP LEVEL FUNCTION //
 // This function is the one bound to the onclick event for "Generate Points" //
+// The button is only active once an image loaded //
 
 function generatePoints() {
     var geometry = getCoreGeometryInputs();
@@ -200,7 +202,6 @@ function generatePoints() {
         var keys = ['X','Y'];
         printResults(pointsInMM, keys);
     }
-    // Need to tie this to the successful load of an image somehow...
     return;
 }
 
@@ -288,7 +289,6 @@ function getPointsList(ptsRaw, name) {
     }
     return vals;
 }
-
 
 function getSpecialAreaList(areaRaw) {
     var areaList = areaRaw.split(/[\n,]+/);
