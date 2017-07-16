@@ -197,7 +197,10 @@ function generatePoints() {
     var geometry = getCoreGeometryInputs();
     if (geometry["error"] == false) {
         var pointsInMM = generatePointsInMM(geometry);
+        var keys = ['X','Y'];
+        printResults(pointsInMM, keys);
     }
+    // Need to tie this to the successful load of an image somehow...
     return;
 }
 
@@ -252,8 +255,12 @@ function generatePointsInMM(geometry) {
     
     var mergedList = mergeLists(initialList, addedList);
     var prunedList = pruneList(mergedList, skippedList);
+    var reconciledList = reconcileAreas(prunedList, specialList, skipFirst);
     
-    console.log(prunedList);
+    var len = reconciledList.length;
+    for (var i=0; i<len; i++) {
+        pointsInMM[i] = {'X': reconciledList[i], 'Y': geometry["crossCorePosition"]};
+    }
     return pointsInMM;
 }
 
@@ -336,11 +343,11 @@ function getSpecialAreaList(areaRaw) {
 
 // These functions are used to reconcile the different point lists //
 
-function generateArray(start, stop, step, skipStart) {
+function generateArray(start, stop, step, skipFirst) {
     var newArray = [];
     var pointN = parseInt((stop-start)/step);
     var newPt = start;
-    if (skipStart == false) {
+    if (skipFirst == false) {
         newArray.push(newPt);
     }
     for (var i=0; i<pointN; i++) {
@@ -402,5 +409,60 @@ function pruneList(originalList, newList) {
     }
     var prunedListClean = removeDuplicates(prunedList);
     return prunedListClean;
+}
+
+function reconcileAreas(originalList, specialAreasList, skipFirst) {
+    var reconciled = originalList.slice();
+    var reconciled_new = [];
+    var new_area = [];
+    var i,j,start,end,step,len_j = 0;
+    
+    var len_i = specialAreasList.length;
+    for (i=0; i<len_i; i++) {
+        start = specialAreasList[i][0];
+        end = specialAreasList[i][1];
+        step = specialAreasList[i][2];
+        new_area = generateArray(start, end, step, skipFirst);
+        reconciled_new = [];
+        len_j = reconciled.length;
+        for (j=0; j<len_j; j++) {
+            if ((reconciled[j] < start) || (reconciled[j] > end)) {
+                reconciled_new.push(reconciled[j]);
+            }
+        }
+        reconciled_new = reconciled_new.concat(new_area);
+        reconciled = reconciled_new.slice();
+    }
+    var reconciledClean = removeDuplicates(reconciled);
+    return reconciledClean;
+}
+
+// This prints an array to the results textarea //
+
+function printResults(listToPrint, keys) {
+    var resultsArea = document.getElementById("results");
+    
+    var resultsList = [];
+    var resultsRow = [];
+    var resultsRowStr = "";
+    var len_i = listToPrint.length;
+    var len_j = keys.length;
+    
+    for (var j=0; j<len_j; j++) {
+        resultsRow.push(keys[j]);
+    }
+    resultsRowStr = resultsRow.join("  ");
+    resultsList.push(resultsRowStr);
+    for (var i=0; i<len_i; i++) {
+        resultsRow = [];
+        for (var j=0; j<len_j; j++) {
+            resultsRow.push(listToPrint[i][keys[j]]);
+        }
+        resultsRowStr = resultsRow.join("  ");
+        resultsList.push(resultsRowStr);
+    }
+    var results = resultsList.join("\n");
+    resultsArea.value = results;
+    return;
 }
 
