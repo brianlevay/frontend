@@ -199,7 +199,9 @@ function generatePoints() {
     var geometry = getCoreGeometryInputs();
     if (geometry["error"] == false) {
         var pointsInMM = generatePointsInMM(geometry);
-        var keys = ['X','Y'];
+        var points = generatePixelPositions(pointsInMM, geometry);
+        //drawPoints(points); // for debugging only
+        var keys = ['downMM','crossMM'];
         printResults(pointsInMM, keys);
     }
     return;
@@ -260,7 +262,7 @@ function generatePointsInMM(geometry) {
     
     var len = reconciledList.length;
     for (var i=0; i<len; i++) {
-        pointsInMM[i] = {'X': reconciledList[i], 'Y': geometry["crossCorePosition"]};
+        pointsInMM[i] = {'downMM': reconciledList[i], 'crossMM': geometry["crossCorePosition"]};
     }
     return pointsInMM;
 }
@@ -466,3 +468,52 @@ function printResults(listToPrint, keys) {
     return;
 }
 
+// This function generates the appropriate pixel positions and dimensions for the pints in mm //
+
+function generatePixelPositions(pointsInMM, geometry) {
+    var points = [];
+    
+    var coreWidthMM = geometry["crossCoreWidth"];
+    var coreWidthPX = state_vals["coreRightPx"] - state_vals["coreLeftPx"];
+    var coreLengthMM = geometry["downCoreLength"];
+    var coreLengthPX = state_vals["coreBottomPx"] - state_vals["coreTopPx"];
+    var spotWidthMM = geometry["crossCoreSpot"];
+    var spotWidthPX = parseInt((coreWidthPX/coreWidthMM)*spotWidthMM);
+    var spotLengthMM = geometry["downCoreSpot"];
+    var spotLengthPX = parseInt((coreLengthPX/coreLengthMM)*spotLengthMM);
+    
+    var crossSlope = (coreWidthPX/coreWidthMM);
+    var crossIntercept = (state_vals["coreRightPx"]-state_vals["coreLeftPx"])/2 + state_vals["coreLeftPx"] - (spotWidthPX/2);
+    var downSlope = (coreLengthPX/coreLengthMM);
+    var downIntercept = state_vals["coreTopPx"] - (spotLengthPX/2);
+    
+    var crossMM,downMM,crossPX,downPX = 0;
+    var point = {};
+    for (var i=0, len=pointsInMM.length; i<len; i++) {
+        crossMM = pointsInMM[i]['crossMM'];
+        crossPX = parseInt(crossSlope*crossMM + crossIntercept);
+        downMM = pointsInMM[i]['downMM'];
+        downPX = parseInt(downSlope*downMM + downIntercept);
+        point = {'downMM':downMM,'crossMM':crossMM,'tlXpx':crossPX,'tlYpx':downPX,'delXpx':spotWidthPX,'delYpx':spotLengthPX};
+        points.push(point);
+    }
+    return points;
+}
+
+// This is just for debugging, to ensure that the millimeter to pixel conversion is correct //
+
+function drawPoints(points) {
+    var canvas = document.getElementById('img_canvas');
+    var ctx = canvas.getContext('2d');
+    var tlX,tlY,delX,delY = 0;
+    for (var i=0,len=points.length; i<len; i++) {
+        tlX = points[i]['tlXpx'];
+        tlY = points[i]['tlYpx'];
+        delX = points[i]['delXpx'];
+        delY = points[i]['delYpx'];
+        ctx.lineWidth="25";
+        ctx.strokeStyle="white";
+        ctx.strokeRect(tlX,tlY,delX,delY);
+    }
+    return;
+}
