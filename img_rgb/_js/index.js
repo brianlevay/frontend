@@ -3,8 +3,7 @@
 var state_vals = {
     fileName: null,
     coreTopPx: 0, coreBottomPx: 0, coreLeftPx: 0, coreRightPx: 0,
-    boundThickness: 10, 
-    pointsInMM: []
+    boundThickness: 10
 };
 
 // TOP LEVEL FUNCTION //
@@ -195,32 +194,137 @@ function resetPointFields() {
 // This function is the one bound to the onclick event for "Generate Points" //
 
 function generatePoints() {
-    generatePointsInMM();
+    var pointsInMM = generatePointsInMM();
     return;
 }
 
 // This function reads the input text boxes and generates the list of body-centered points, in millimeters
 
 function generatePointsInMM() {
+    var pointsInMM = [];
+    
     var downCoreLength = document.getElementById("lengthTxt").value;
     var downCoreSpacing = document.getElementById("spacingTxt").value;
     var crossCorePosition = document.getElementById("lateralTxt").value;
-    var skipFirst = document.getElementById("skipFirstCheck").value;
+    var skipFirst = document.getElementById("skipFirstCheck").checked;
     
     var addedPoints = document.getElementById("addedPoints").value;
     var skippedPoints = document.getElementById("skippedPoints").value;
     var specialAreas = document.getElementById("specialAreas").value;
     
     var totalLength = Number(downCoreLength);
-    var stepSize = Number(downCoreSpacing);
-    var laterPos = Number(crossCorePosition);
+    var ptSpacing = Number(downCoreSpacing);
+    var lateralPos = Number(crossCorePosition);
+    
+    if (isNaN(totalLength) || isNaN(ptSpacing) || isNaN(lateralPos)) {
+        alert("Non-numeric values entered in length, spacing, or cross-core position field.");
+        return [];
+    }
 
-    var addedList = addedPoints.split(/[\n,]+/).map(Number);
-    var skippedList = skippedPoints.split(/[\n,]+/).map(Number);
-    var specialList = specialAreas.split(/[\n,]+/);
+    var initialList = generateArray(0,totalLength,ptSpacing,skipFirst);
     
-    // NEED TO CHECK IF ANY OF THE ENTRIES ARE NON-NUMERIC //
+    var addedListStr = addedPoints.split(/[\n,]+/);
+    var addedList = convertPointsList(addedListStr, "extra points");
+    addedList = addedList.sort();
     
-    console.log(addedList);
-    return;
+    var skippedListStr = skippedPoints.split(/[\n,]+/);
+    var skippedList = convertPointsList(skippedListStr, "skip points");
+    skippedList = skippedList.sort();
+    
+    var specialListStr = specialAreas.split(/[\n,]+/);
+    var specialList = convertAreaList(specialListStr);
+    
+    return pointsInMM;
 }
+
+// This function attempts to convert the user-entered extra and skip point lists into numbers //
+
+function convertPointsList(ptsList, name) {
+    var vals = [];
+    var badPts = false;
+    var i,len_i = 0;
+    len_i = ptsList.length;
+    
+    for (i=0; i<len_i; i++) {
+        if (ptsList[i] != "") {
+            ptsList[i] = Number(ptsList[i]);
+            if (isNaN(ptsList[i]) == true) {
+                if (badPts == false) {
+                    alert("Non-numeric value entered in " + name + " field. Points will be ignored");
+                    badPts = true;
+                }
+            } else {
+                vals.push(ptsList[i]);
+            }
+        }
+    }
+    return vals;
+}
+
+
+function convertAreaList(areaList) {
+    var vals = [];
+    var sub_vals = [];
+    var badArea = false;
+    var badSubset = false;
+    var i,j,len_i,len_j = 0;
+    len_i = areaList.length;
+    
+    for (i=0; i<len_i; i++) {
+        if (areaList[i] != "") {
+            sub_vals = areaList[i].split("-");
+            len_j = sub_vals.length;
+        
+            if (len_j != 3) {
+                if (badArea == false) {
+                    alert("Invalid special area defined. Area will be ignored");
+                    badArea = true;
+                }
+            } else {
+                badSubset = false;
+                for (j=0; j<3; j++) {
+                    sub_vals[j] = Number(sub_vals[j]);
+                    if (isNaN(sub_vals[i]) == true) {
+                        if (badArea == false) {
+                            alert("Non-numeric value entered in special areas field. Area will be ignored");
+                            badArea = true;
+                        }
+                        badSubset = true;
+                    }
+                }
+                if (badSubset == false) {
+                    var test1 = (sub_vals[1] - sub_vals[0]) > 0;
+                    var test2 = sub_vals[2] <= (sub_vals[1]-sub_vals[0]);
+                    if (!test1 || !test2) {
+                        badSubset = true;
+                        if (badArea == false) {
+                            alert("Invalid special area defined. Area will be ignored");
+                            badArea = true;
+                        }
+                    }
+                }
+                if (badSubset == false) {
+                    vals.push(sub_vals);
+                }
+            }
+        }
+    }
+    return vals;
+}
+
+// This is a generic array generator //
+
+function generateArray(start, stop, step, skipStart) {
+    var newArray = [];
+    var pointN = parseInt((stop-start)/step);
+    var newPt = start;
+    if (skipStart == false) {
+        newArray.push(newPt);
+    }
+    for (var i=0; i<pointN; i++) {
+        newPt = (i+1)*step + start;
+        newArray.push(newPt);
+    }
+    return newArray;
+}
+
