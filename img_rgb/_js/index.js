@@ -194,52 +194,73 @@ function resetPointFields() {
 // This function is the one bound to the onclick event for "Generate Points" //
 
 function generatePoints() {
-    var pointsInMM = generatePointsInMM();
+    var geometry = getCoreGeometryInputs();
+    if (geometry["error"] == false) {
+        var pointsInMM = generatePointsInMM(geometry);
+    }
     return;
 }
 
-// This function reads the input text boxes and generates the list of body-centered points, in millimeters
+// This validates the core geometry inputs and converts to numbers //
 
-function generatePointsInMM() {
+function getCoreGeometryInputs() {
+    var geometry = {};
+    var hasError = false;
+    var numeric = 0;
+    geometry["downCoreLength"] = document.getElementById("lengthTxt").value;
+    geometry["crossCoreWidth"] = document.getElementById("widthTxt").value;
+    geometry["downCoreSpacing"] = document.getElementById("spacingTxt").value;
+    geometry["crossCorePosition"] = document.getElementById("lateralTxt").value;
+    geometry["downCoreSpot"] = document.getElementById("downSpotTxt").value;
+    geometry["crossCoreSpot"] = document.getElementById("crossSpotTxt").value;
+    for (var value in geometry) {
+        if (geometry[value] == "") {
+            hasError = true;
+        } else {
+            numeric = Number(geometry[value]);
+            if (isNaN(numeric)) {
+                hasError = true;
+            } else {
+                geometry[value] = numeric;
+            }
+        }
+    }
+    if (hasError == true) {
+        alert("Missing or non-numeric entry in core size or point spacing field.");
+        geometry["error"] = true;
+    } else {
+        geometry["error"] = false;
+    }
+    return geometry;
+}
+
+// This function reads the special point text boxes and generates the list of body-centered points, in millimeters //
+
+function generatePointsInMM(geometry) {
     var pointsInMM = [];
     
-    var downCoreLength = document.getElementById("lengthTxt").value;
-    var downCoreSpacing = document.getElementById("spacingTxt").value;
-    var crossCorePosition = document.getElementById("lateralTxt").value;
     var skipFirst = document.getElementById("skipFirstCheck").checked;
-    
     var addedPoints = document.getElementById("addedPoints").value;
     var skippedPoints = document.getElementById("skippedPoints").value;
     var specialAreas = document.getElementById("specialAreas").value;
-    
-    var totalLength = Number(downCoreLength);
-    var ptSpacing = Number(downCoreSpacing);
-    var lateralPos = Number(crossCorePosition);
-    
-    if (isNaN(totalLength) || isNaN(ptSpacing) || isNaN(lateralPos)) {
-        alert("Non-numeric values entered in length, spacing, or cross-core position field.");
-        return [];
-    }
 
-    var initialList = generateArray(0,totalLength,ptSpacing,skipFirst);
+    var initialList = generateArray(0,geometry["downCoreLength"],geometry["downCoreSpacing"],skipFirst);
     
-    var addedListStr = addedPoints.split(/[\n,]+/);
-    var addedList = convertPointsList(addedListStr, "extra points");
-    addedList = addedList.sort();
+    var addedList = getPointsList(addedPoints, "extra points");
+    var skippedList = getPointsList(skippedPoints, "skip points");
+    var specialList = getSpecialAreaList(specialAreas);
     
-    var skippedListStr = skippedPoints.split(/[\n,]+/);
-    var skippedList = convertPointsList(skippedListStr, "skip points");
-    skippedList = skippedList.sort();
+    var mergedList = mergeLists(initialList, addedList);
+    var prunedList = pruneList(mergedList, skippedList);
     
-    var specialListStr = specialAreas.split(/[\n,]+/);
-    var specialList = convertAreaList(specialListStr);
-    
+    console.log(prunedList);
     return pointsInMM;
 }
 
 // This function attempts to convert the user-entered extra and skip point lists into numbers //
 
-function convertPointsList(ptsList, name) {
+function getPointsList(ptsRaw, name) {
+    var ptsList = ptsRaw.split(/[\n,]+/);
     var vals = [];
     var badPts = false;
     var i,len_i = 0;
@@ -262,7 +283,8 @@ function convertPointsList(ptsList, name) {
 }
 
 
-function convertAreaList(areaList) {
+function getSpecialAreaList(areaRaw) {
+    var areaList = areaRaw.split(/[\n,]+/);
     var vals = [];
     var sub_vals = [];
     var badArea = false;
@@ -312,7 +334,7 @@ function convertAreaList(areaList) {
     return vals;
 }
 
-// This is a generic array generator //
+// These functions are used to reconcile the different point lists //
 
 function generateArray(start, stop, step, skipStart) {
     var newArray = [];
@@ -326,5 +348,59 @@ function generateArray(start, stop, step, skipStart) {
         newArray.push(newPt);
     }
     return newArray;
+}
+
+function removeDuplicates(originalList) {
+    originalList = originalList.sort(function(a,b){return a-b});
+    var originalListClean = [originalList[0]];
+    var len_k = originalList.length;
+    for (var k=1; k<len_k; k++) {
+        if (originalList[k] != originalList[k-1]) {
+            originalListClean.push(originalList[k]);
+        }
+    }
+    return originalListClean;
+}
+
+function mergeLists(originalList, newList) {
+    var mergedList = originalList.slice();
+    var len_i = originalList.length;
+    var len_j = newList.length;
+    var i,j,k = 0;
+    var found = false;
+    for (j=0; j<len_j; j++) {
+        found = false;
+        for (i=0; i<len_i; i++) {
+            if (newList[j] == originalList[i]) {
+                found = true;
+            }
+        }
+        if (found == false) {
+            mergedList.push(newList[j]);
+        }
+    }
+    var mergedListClean = removeDuplicates(mergedList);
+    return mergedListClean;
+}
+
+function pruneList(originalList, newList) {
+    var prunedList = [];
+    var len_i = originalList.length;
+    var len_j = newList.length;
+    var i,j,k = 0;
+    var found = false;
+    for (i=0; i<len_i; i++) {
+        found = false;
+        for (j=0; j<len_j; j++) {
+            if (originalList[i] == newList[j]) {
+                found = true;
+            }
+        }
+        if (found == false) {
+            prunedList.push(originalList[i]);
+        }
+    }
+    var prunedListClean = removeDuplicates(prunedList);
+    return prunedListClean;
 }
 
