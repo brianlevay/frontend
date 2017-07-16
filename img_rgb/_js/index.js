@@ -23,15 +23,18 @@ function initializeImage(files) {
     var ctxCanvas = canvas.getContext('2d');
     var imgNew = new Image();
     imgNew.onload = function() {
-        var height = parseInt(imgNew.height);
-        var width = parseInt(imgNew.width);
+        var height = imgNew.height;
+        var width = imgNew.width;
         canvasArea.style.height = height + "px";
         canvasArea.style.width = width + "px";
         canvas.height = height;
         canvas.width = width;
         overlay.height = height;
         overlay.width = width;
-        ctxCanvas.drawImage(imgNew, 0, 0);
+        //ctxCanvas.drawImage(imgNew, 0, 0);
+        ctxCanvas.fillStyle = "rgb(120,120,60)";
+        ctxCanvas.fillRect(0,0,width,height);
+        /////////////////////////////////////
         state_vals["fileName"] = files[0];
         state_vals["coreTopPx"] = 0;
         state_vals["coreBottomPx"] = height;
@@ -164,13 +167,13 @@ function updateBoundaries(element, boundary, opposite, constraint) {
     if (isNaN(Number(element.value)) == false) {
         if (constraint == "smaller") {
             if (element.value < state_vals[opposite]) {
-                state_vals[boundary] = parseInt(element.value);
+                state_vals[boundary] = Math.round(Number(element.value));
             } else {
                 state_vals[boundary] = state_vals[opposite];
             }
         } else if (constraint == "larger") {
             if (element.value > state_vals[opposite]) {
-                state_vals[boundary] = parseInt(element.value);
+                state_vals[boundary] = Math.round(Number(element.value));
             } else {
                 state_vals[boundary] = state_vals[opposite];
             }
@@ -205,11 +208,12 @@ function generatePoints() {
     var geometry = getCoreGeometryInputs();
     if (geometry["error"] == false) {
         var pointsInMM = generatePointsInMM(geometry);
-        var points = generatePixelPositions(pointsInMM, geometry);
+        var pointsInPX = generatePixelPositions(pointsInMM, geometry);
+        var pointsRGB = getRGB(pointsInPX);
+        var keys = ['downMM','crossMM','R','G','B'];
         clearOverlay();
-        drawPoints(points);
-        var keys = ['downMM','crossMM'];
-        printResults(pointsInMM, keys);
+        drawPoints(pointsInPX);
+        printResults(pointsRGB, keys);
     }
     return;
 }
@@ -354,7 +358,7 @@ function getSpecialAreaList(areaRaw) {
 
 function generateArray(start, stop, step, skipFirst) {
     var newArray = [];
-    var pointN = parseInt((stop-start)/step);
+    var pointN = Math.floor((stop-start)/step);
     var newPt = start;
     if (skipFirst == false) {
         newArray.push(newPt);
@@ -382,7 +386,7 @@ function mergeLists(originalList, newList) {
     var mergedList = originalList.slice();
     var len_i = originalList.length;
     var len_j = newList.length;
-    var i,j,k = 0;
+    var i,j = 0;
     var found = false;
     for (j=0; j<len_j; j++) {
         found = false;
@@ -403,7 +407,7 @@ function pruneList(originalList, newList) {
     var prunedList = [];
     var len_i = originalList.length;
     var len_j = newList.length;
-    var i,j,k = 0;
+    var i,j = 0;
     var found = false;
     for (i=0; i<len_i; i++) {
         found = false;
@@ -478,16 +482,16 @@ function printResults(listToPrint, keys) {
 // This function generates the appropriate pixel positions and dimensions for the pints in mm //
 
 function generatePixelPositions(pointsInMM, geometry) {
-    var points = [];
+    var pointsInPX = [];
     
     var coreWidthMM = geometry["crossCoreWidth"];
     var coreWidthPX = state_vals["coreRightPx"] - state_vals["coreLeftPx"];
     var coreLengthMM = geometry["downCoreLength"];
     var coreLengthPX = state_vals["coreBottomPx"] - state_vals["coreTopPx"];
     var spotWidthMM = geometry["crossCoreSpot"];
-    var spotWidthPX = parseInt((coreWidthPX/coreWidthMM)*spotWidthMM);
+    var spotWidthPX = Math.round((coreWidthPX/coreWidthMM)*spotWidthMM);
     var spotLengthMM = geometry["downCoreSpot"];
-    var spotLengthPX = parseInt((coreLengthPX/coreLengthMM)*spotLengthMM);
+    var spotLengthPX = Math.round((coreLengthPX/coreLengthMM)*spotLengthMM);
     
     var crossSlope = (coreWidthPX/coreWidthMM);
     var crossIntercept = (state_vals["coreRightPx"]-state_vals["coreLeftPx"])/2 + state_vals["coreLeftPx"] - (spotWidthPX/2);
@@ -498,13 +502,13 @@ function generatePixelPositions(pointsInMM, geometry) {
     var point = {};
     for (var i=0, len=pointsInMM.length; i<len; i++) {
         crossMM = pointsInMM[i]['crossMM'];
-        crossPX = parseInt(crossSlope*crossMM + crossIntercept);
+        crossPX = Math.round(crossSlope*crossMM + crossIntercept);
         downMM = pointsInMM[i]['downMM'];
-        downPX = parseInt(downSlope*downMM + downIntercept);
+        downPX = Math.round(downSlope*downMM + downIntercept);
         point = {'downMM':downMM,'crossMM':crossMM,'tlXpx':crossPX,'tlYpx':downPX,'delXpx':spotWidthPX,'delYpx':spotLengthPX};
-        points.push(point);
+        pointsInPX.push(point);
     }
-    return points;
+    return pointsInPX;
 }
 
 // This clears the entire overlay canvas so that the points can be redrawn //
@@ -531,4 +535,50 @@ function drawPoints(points) {
         ctxOverlay.strokeRect(tlX,tlY,delX,delY);
     }
     return;
+}
+
+// This gets the RGB values from each point //
+
+function getRGB(pointsInPX) {
+    var pointsRGB = [];
+    
+    var canvas = document.getElementById('img_canvas');
+    var ctxCanvas = canvas.getContext('2d');
+    var tlX,tlY,delX,delY = 0;
+    var pixelArray = [];
+    var RGB = {};
+    var point = {};
+    for (var i=0, len=pointsInPX.length; i<len; i++) {
+        tlX = pointsInPX[i]['tlXpx'];
+        tlY = pointsInPX[i]['tlYpx'];
+        delX = pointsInPX[i]['delXpx'];
+        delY = pointsInPX[i]['delYpx'];
+        pixelArray = ctxCanvas.getImageData(tlX,tlY,delX,delY).data;
+        RGB = averageRGB(pixelArray);
+        point = {'downMM': pointsInPX[i]['downMM'], 'crossMM': pointsInPX[i]['crossMM']};
+        point['R'] = RGB['R'];
+        point['G'] = RGB['G'];
+        point['B'] = RGB['B'];
+        pointsRGB.push(point);
+    }
+    return pointsRGB;
+}
+
+// This averages the RGB values over an entire spot //
+
+function averageRGB(pixelArray) {
+    var RGB = {'R':0,'G':0,'B':0};
+    var n_pixels = Math.round(pixelArray.length/4);
+    for (var k=0, len=pixelArray.length; k<len; k+=4) {
+        RGB['R'] += pixelArray[k+0];
+        RGB['G'] += pixelArray[k+1];
+        RGB['B'] += pixelArray[k+3];
+    }
+    //RGB['R'] = Math.round(RGB['R']/n_pixels);
+    //RGB['G'] = Math.round(RGB['G']/n_pixels);
+    //RGB['B'] = Math.round(RGB['B']/n_pixels);
+    RGB['R'] = pixelArray[0];
+    RGB['G'] = pixelArray[1];
+    RGB['B'] = pixelArray[2];
+    return RGB;
 }
