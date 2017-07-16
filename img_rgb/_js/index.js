@@ -17,15 +17,21 @@ function handleFile(files) {
 // This function loads the image and resets the fields and sliders as needed //
 
 function initializeImage(files) {
+    var canvasArea = document.getElementById('canvasArea');
     var canvas = document.getElementById('img_canvas');
-    var ctx = canvas.getContext('2d');
+    var overlay = document.getElementById('overlay');
+    var ctxCanvas = canvas.getContext('2d');
     var imgNew = new Image();
     imgNew.onload = function() {
         var height = parseInt(imgNew.height);
         var width = parseInt(imgNew.width);
+        canvasArea.style.height = height + "px";
+        canvasArea.style.width = width + "px";
         canvas.height = height;
         canvas.width = width;
-        ctx.drawImage(imgNew, 0, 0);
+        overlay.height = height;
+        overlay.width = width;
+        ctxCanvas.drawImage(imgNew, 0, 0);
         state_vals["fileName"] = files[0];
         state_vals["coreTopPx"] = 0;
         state_vals["coreBottomPx"] = height;
@@ -200,7 +206,8 @@ function generatePoints() {
     if (geometry["error"] == false) {
         var pointsInMM = generatePointsInMM(geometry);
         var points = generatePixelPositions(pointsInMM, geometry);
-        //drawPoints(points); // for debugging only
+        clearOverlay();
+        drawPoints(points);
         var keys = ['downMM','crossMM'];
         printResults(pointsInMM, keys);
     }
@@ -500,20 +507,28 @@ function generatePixelPositions(pointsInMM, geometry) {
     return points;
 }
 
-// This is just for debugging, to ensure that the millimeter to pixel conversion is correct //
+// This clears the entire overlay canvas so that the points can be redrawn //
+
+function clearOverlay() {
+    var overlay = document.getElementById('overlay');
+    var ctxOverlay = overlay.getContext('2d');
+    ctxOverlay.clearRect(0,0,overlay.width,overlay.height);
+}
+
+// This plots the points as rectangles on the overlay canvas //
 
 function drawPoints(points) {
-    var canvas = document.getElementById('img_canvas');
-    var ctx = canvas.getContext('2d');
+    var overlay = document.getElementById('overlay');
+    var ctxOverlay = overlay.getContext('2d');
     var tlX,tlY,delX,delY = 0;
     for (var i=0,len=points.length; i<len; i++) {
         tlX = points[i]['tlXpx'];
         tlY = points[i]['tlYpx'];
         delX = points[i]['delXpx'];
         delY = points[i]['delYpx'];
-        ctx.lineWidth="25";
-        ctx.strokeStyle="white";
-        ctx.strokeRect(tlX,tlY,delX,delY);
+        ctxOverlay.lineWidth="10";
+        ctxOverlay.strokeStyle="white";
+        ctxOverlay.strokeRect(tlX,tlY,delX,delY);
     }
     return;
 }
