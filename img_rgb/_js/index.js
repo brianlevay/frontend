@@ -31,10 +31,11 @@ function initializeImage(files) {
         canvas.width = width;
         overlay.height = height;
         overlay.width = width;
-        //ctxCanvas.drawImage(imgNew, 0, 0);
-        ctxCanvas.fillStyle = "rgb(120,120,60)";
-        ctxCanvas.fillRect(0,0,width,height);
-        /////////////////////////////////////
+        ctxCanvas.drawImage(imgNew, 0, 0);
+        ///// for debugging /////////////////////////////////////
+        // ctxCanvas.fillStyle = "rgb(120,120,60)";
+        // ctxCanvas.fillRect(0,0,width,height);
+        /////////////////////////////////////////////////////////
         state_vals["fileName"] = files[0];
         state_vals["coreTopPx"] = 0;
         state_vals["coreBottomPx"] = height;
@@ -572,13 +573,10 @@ function averageRGB(pixelArray) {
     for (var k=0, len=pixelArray.length; k<len; k+=4) {
         RGB['R'] += pixelArray[k+0];
         RGB['G'] += pixelArray[k+1];
-        RGB['B'] += pixelArray[k+3];
+        RGB['B'] += pixelArray[k+2];
     }
-    //RGB['R'] = Math.round(RGB['R']/n_pixels);
-    //RGB['G'] = Math.round(RGB['G']/n_pixels);
-    //RGB['B'] = Math.round(RGB['B']/n_pixels);
-    RGB['R'] = pixelArray[0];
-    RGB['G'] = pixelArray[1];
-    RGB['B'] = pixelArray[2];
+    RGB['R'] = Math.round(RGB['R']/n_pixels);
+    RGB['G'] = Math.round(RGB['G']/n_pixels);
+    RGB['B'] = Math.round(RGB['B']/n_pixels);
     return RGB;
 }
