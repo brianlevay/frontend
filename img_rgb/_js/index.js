@@ -549,13 +549,13 @@ function averageRGB(pixelArray) {
     var RGB = {'R':0,'G':0,'B':0};
     var n_pixels = Math.round(pixelArray.length/4);
     for (var k=0, len=pixelArray.length; k<len; k+=4) {
-        RGB['R'] += pixelArray[k+0];
-        RGB['G'] += pixelArray[k+1];
-        RGB['B'] += pixelArray[k+2];
+        RGB['R'] += Math.pow(pixelArray[k+0],2);
+        RGB['G'] += Math.pow(pixelArray[k+1],2);
+        RGB['B'] += Math.pow(pixelArray[k+2],2);
     }
-    RGB['R'] = Math.round(RGB['R']/n_pixels);
-    RGB['G'] = Math.round(RGB['G']/n_pixels);
-    RGB['B'] = Math.round(RGB['B']/n_pixels);
+    RGB['R'] = Math.round(Math.sqrt(RGB['R']/n_pixels));
+    RGB['G'] = Math.round(Math.sqrt(RGB['G']/n_pixels));
+    RGB['B'] = Math.round(Math.sqrt(RGB['B']/n_pixels));
     return RGB;
 }
 
