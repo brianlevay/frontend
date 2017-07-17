@@ -33,8 +33,8 @@ function initializeImage(files) {
         overlay.width = width;
         ctxCanvas.drawImage(imgNew, 0, 0);
         ///// for debugging /////////////////////////////////////
-        // ctxCanvas.fillStyle = "rgb(120,120,60)";
-        // ctxCanvas.fillRect(0,0,width,height);
+        //ctxCanvas.fillStyle = "rgb(131,124,98)";
+        //ctxCanvas.fillRect(0,0,width,height);
         /////////////////////////////////////////////////////////
         state_vals["fileName"] = files[0];
         state_vals["coreTopPx"] = 0;
@@ -213,7 +213,7 @@ function generatePoints() {
         var pointsRGB = getRGB(pointsInPX);
         var keys = ['downMM','crossMM','R','G','B'];
         clearOverlay();
-        drawPoints(pointsInPX);
+        drawPoints(pointsRGB);
         printResults(pointsRGB, keys);
     }
     return;
@@ -512,32 +512,6 @@ function generatePixelPositions(pointsInMM, geometry) {
     return pointsInPX;
 }
 
-// This clears the entire overlay canvas so that the points can be redrawn //
-
-function clearOverlay() {
-    var overlay = document.getElementById('overlay');
-    var ctxOverlay = overlay.getContext('2d');
-    ctxOverlay.clearRect(0,0,overlay.width,overlay.height);
-}
-
-// This plots the points as rectangles on the overlay canvas //
-
-function drawPoints(points) {
-    var overlay = document.getElementById('overlay');
-    var ctxOverlay = overlay.getContext('2d');
-    var tlX,tlY,delX,delY = 0;
-    for (var i=0,len=points.length; i<len; i++) {
-        tlX = points[i]['tlXpx'];
-        tlY = points[i]['tlYpx'];
-        delX = points[i]['delXpx'];
-        delY = points[i]['delYpx'];
-        ctxOverlay.lineWidth="10";
-        ctxOverlay.strokeStyle="white";
-        ctxOverlay.strokeRect(tlX,tlY,delX,delY);
-    }
-    return;
-}
-
 // This gets the RGB values from each point //
 
 function getRGB(pointsInPX) {
@@ -557,6 +531,10 @@ function getRGB(pointsInPX) {
         pixelArray = ctxCanvas.getImageData(tlX,tlY,delX,delY).data;
         RGB = averageRGB(pixelArray);
         point = {'downMM': pointsInPX[i]['downMM'], 'crossMM': pointsInPX[i]['crossMM']};
+        point['tlXpx'] = pointsInPX[i]['tlXpx'];
+        point['tlYpx'] = pointsInPX[i]['tlYpx'];
+        point['delXpx'] = pointsInPX[i]['delXpx'];
+        point['delYpx'] = pointsInPX[i]['delYpx'];
         point['R'] = RGB['R'];
         point['G'] = RGB['G'];
         point['B'] = RGB['B'];
@@ -580,3 +558,41 @@ function averageRGB(pixelArray) {
     RGB['B'] = Math.round(RGB['B']/n_pixels);
     return RGB;
 }
+
+// This plots the points as rectangles on the overlay canvas //
+
+function drawPoints(points) {
+    var fillPoints = document.getElementById("fillPoints").checked;
+    
+    var overlay = document.getElementById('overlay');
+    var ctxOverlay = overlay.getContext('2d');
+    var tlX,tlY,delX,delY,R,G,B = 0;
+    var rgbStr = "";
+    for (var i=0,len=points.length; i<len; i++) {
+        tlX = points[i]['tlXpx'];
+        tlY = points[i]['tlYpx'];
+        delX = points[i]['delXpx'];
+        delY = points[i]['delYpx'];
+        R = points[i]['R'];
+        G = points[i]['G'];
+        B = points[i]['B'];
+        rgbStr = "rgb(" + R + "," + G + "," + B + ")";
+        if (fillPoints) {
+            ctxOverlay.fillStyle = rgbStr;
+            ctxOverlay.fillRect(tlX,tlY,delX,delY);
+        }
+        ctxOverlay.lineWidth="10";
+        ctxOverlay.strokeStyle="white";
+        ctxOverlay.strokeRect(tlX,tlY,delX,delY);
+    }
+    return;
+}
+
+// This clears the entire overlay canvas so that the points can be redrawn //
+
+function clearOverlay() {
+    var overlay = document.getElementById('overlay');
+    var ctxOverlay = overlay.getContext('2d');
+    ctxOverlay.clearRect(0,0,overlay.width,overlay.height);
+}
+
