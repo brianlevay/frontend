@@ -609,6 +609,56 @@ function LabToXYZ([L,a,b]) {
     return[X,Y,Z];
 }
 
+// This handles the test area in the methods //
+
+function rgbTest() {
+    var Rtxt = document.getElementById("Rtxt");
+    var Gtxt = document.getElementById("Gtxt");
+    var Btxt = document.getElementById("Btxt");
+    var Xtxt = document.getElementById("Xtxt");
+    var Ytxt = document.getElementById("Ytxt");
+    var Ztxt = document.getElementById("Ztxt");
+    var Ltxt = document.getElementById("Ltxt");
+    var AStxt = document.getElementById("AStxt");
+    var BStxt = document.getElementById("BStxt");
+    var Rin = parseInt(Rtxt.value);
+    var Gin = parseInt(Gtxt.value);
+    var Bin = parseInt(Btxt.value);
+    var XYZ = RGBtoXYZ([Rin,Gin,Bin]);
+    var Lab = XYZtoLab(XYZ);
+    Xtxt.value = XYZ[0];
+    Ytxt.value = XYZ[1];
+    Ztxt.value = XYZ[2];
+    Ltxt.value = Lab[0];
+    AStxt.value = Lab[1];
+    BStxt.value = Lab[2];
+    return;
+}
+
+function labTest() {
+    var Rtxt = document.getElementById("Rtxt");
+    var Gtxt = document.getElementById("Gtxt");
+    var Btxt = document.getElementById("Btxt");
+    var Xtxt = document.getElementById("Xtxt");
+    var Ytxt = document.getElementById("Ytxt");
+    var Ztxt = document.getElementById("Ztxt");
+    var Ltxt = document.getElementById("Ltxt");
+    var AStxt = document.getElementById("AStxt");
+    var BStxt = document.getElementById("BStxt");
+    var Lin = parseFloat(Ltxt.value);
+    var ASin = parseFloat(AStxt.value);
+    var BSin = parseFloat(BStxt.value);
+    var XYZ = LabToXYZ([Lin,ASin,BSin]);
+    var RGB = XYZtoRGB(XYZ);
+    Xtxt.value = XYZ[0];
+    Ytxt.value = XYZ[1];
+    Ztxt.value = XYZ[2];
+    Rtxt.value = RGB[0];
+    Gtxt.value = RGB[1];
+    Btxt.value = RGB[2];
+    return;
+}
+
 // This plots the points as rectangles on the overlay canvas //
 
 function drawPoints(points) {
