@@ -213,7 +213,7 @@ function generatePoints() {
         var pointsInMM = generatePointsInMM(geometry);
         var pointsInPX = generatePixelPositions(pointsInMM, geometry);
         var pointsRGB = getRGB(pointsInPX);
-        var keys = ['downMM','crossMM','R','G','B','L*','a*','b*'];
+        var keys = ['downMM','crossMM','R','G','B','X','Y','Z','L*','a*','b*'];
         clearOverlay();
         drawPoints(pointsRGB);
         printResults(pointsRGB, keys);
@@ -508,12 +508,11 @@ function getRGB(pointsInPX) {
         point['tlYpx'] = pointsInPX[i]['tlYpx'];
         point['delXpx'] = pointsInPX[i]['delXpx'];
         point['delYpx'] = pointsInPX[i]['delYpx'];
-        point['R'] = aveRGB['R'];
-        point['G'] = aveRGB['G'];
-        point['B'] = aveRGB['B'];
-        point['L*'] = aveRGB['L*'];
-        point['a*'] = aveRGB['a*'];
-        point['b*'] = aveRGB['b*'];
+        for (var key in aveRGB) {
+            if (aveRGB.hasOwnProperty(key)) {
+                point[key] = aveRGB[key];
+            }
+        }
         pointsRGB.push(point);
     }
     return pointsRGB;
@@ -522,7 +521,7 @@ function getRGB(pointsInPX) {
 // This averages the RGB values over an entire spot //
 
 function averageRGB(pixelArray) {
-    var aveRGB = {'R':0,'G':0,'B':0,'L*':0,'a*':0,'b*':0};
+    var aveRGB = {'R':0,'G':0,'B':0,'X':0,'Y':0,'Z':0,'L*':0,'a*':0,'b*':0};
     var n_pixels = Math.round(pixelArray.length/4);
     var RGB, XYZ, Lab = [];
     for (var k=0, len=pixelArray.length; k<len; k+=4) {
@@ -536,10 +535,14 @@ function averageRGB(pixelArray) {
     aveRGB['L*'] = aveRGB['L*']/n_pixels;
     aveRGB['a*'] = aveRGB['a*']/n_pixels;
     aveRGB['b*'] = aveRGB['b*']/n_pixels;
-    var RGBstar = XYZtoRGB(LabToXYZ([aveRGB['L*'],aveRGB['a*'],aveRGB['b*']]));
-    aveRGB['R'] = RGBstar[0];
-    aveRGB['G'] = RGBstar[1];
-    aveRGB['B'] = RGBstar[2];
+    var XYZ_ave = LabToXYZ([aveRGB['L*'],aveRGB['a*'],aveRGB['b*']]);
+    aveRGB['X'] = XYZ_ave[0];
+    aveRGB['Y'] = XYZ_ave[1];
+    aveRGB['Z'] = XYZ_ave[2];
+    var RGB_ave = XYZtoRGB(XYZ_ave);
+    aveRGB['R'] = RGB_ave[0];
+    aveRGB['G'] = RGB_ave[1];
+    aveRGB['B'] = RGB_ave[2];
     return aveRGB;
 }
 
