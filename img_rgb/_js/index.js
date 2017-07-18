@@ -709,6 +709,7 @@ function printResults(listToPrint, keys) {
     var resultsRowStr = "";
     var len_i = listToPrint.length;
     var len_j = keys.length;
+    var val;
     
     for (var j=0; j<len_j; j++) {
         resultsRow.push(keys[j]);
@@ -718,7 +719,11 @@ function printResults(listToPrint, keys) {
     for (var i=0; i<len_i; i++) {
         resultsRow = [];
         for (var j=0; j<len_j; j++) {
-            resultsRow.push(listToPrint[i][keys[j]]);
+            val = listToPrint[i][keys[j]];
+            if ((keys[j]=='X')||(keys[j]=='Y')||(keys[j]=='Z')||(keys[j]=='L*')||(keys[j]=='a*')||(keys[j]=='b*')){
+                val = val.toFixed(4);
+            }
+            resultsRow.push(val);
         }
         resultsRowStr = resultsRow.join("  ");
         resultsList.push(resultsRowStr);
