@@ -3,7 +3,9 @@
 var state_vals = {
     fileName: null,
     coreTopPx: 0, coreBottomPx: 0, coreLeftPx: 0, coreRightPx: 0,
-    boundThickness: 10
+    boundThickness: 10,
+    RGB_XYZ_white: {'Xref':100.0,'Yref':100.0,'Zref':100.0},
+    XYZ_Lab_white: {'Xref':95.047,'Yref':100.000,'Zref':108.883}
 };
 
 // TOP LEVEL FUNCTION //
@@ -211,7 +213,7 @@ function generatePoints() {
         var pointsInMM = generatePointsInMM(geometry);
         var pointsInPX = generatePixelPositions(pointsInMM, geometry);
         var pointsRGB = getRGB(pointsInPX);
-        var keys = ['downMM','crossMM','R','G','B'];
+        var keys = ['downMM','crossMM','R','G','B','L*','a*','b*'];
         clearOverlay();
         drawPoints(pointsRGB);
         printResults(pointsRGB, keys);
@@ -451,35 +453,6 @@ function reconcileAreas(originalList, specialAreasList, skipFirst) {
     return reconciledClean;
 }
 
-// This prints an array to the results textarea //
-
-function printResults(listToPrint, keys) {
-    var resultsArea = document.getElementById("results");
-    
-    var resultsList = [];
-    var resultsRow = [];
-    var resultsRowStr = "";
-    var len_i = listToPrint.length;
-    var len_j = keys.length;
-    
-    for (var j=0; j<len_j; j++) {
-        resultsRow.push(keys[j]);
-    }
-    resultsRowStr = resultsRow.join("  ");
-    resultsList.push(resultsRowStr);
-    for (var i=0; i<len_i; i++) {
-        resultsRow = [];
-        for (var j=0; j<len_j; j++) {
-            resultsRow.push(listToPrint[i][keys[j]]);
-        }
-        resultsRowStr = resultsRow.join("  ");
-        resultsList.push(resultsRowStr);
-    }
-    var results = resultsList.join("\n");
-    resultsArea.value = results;
-    return;
-}
-
 // This function generates the appropriate pixel positions and dimensions for the pints in mm //
 
 function generatePixelPositions(pointsInMM, geometry) {
@@ -521,7 +494,7 @@ function getRGB(pointsInPX) {
     var ctxCanvas = canvas.getContext('2d');
     var tlX,tlY,delX,delY = 0;
     var pixelArray = [];
-    var RGB = {};
+    var aveRGB = {};
     var point = {};
     for (var i=0, len=pointsInPX.length; i<len; i++) {
         tlX = pointsInPX[i]['tlXpx'];
@@ -529,15 +502,18 @@ function getRGB(pointsInPX) {
         delX = pointsInPX[i]['delXpx'];
         delY = pointsInPX[i]['delYpx'];
         pixelArray = ctxCanvas.getImageData(tlX,tlY,delX,delY).data;
-        RGB = averageRGB(pixelArray);
+        aveRGB = averageRGB(pixelArray);
         point = {'downMM': pointsInPX[i]['downMM'], 'crossMM': pointsInPX[i]['crossMM']};
         point['tlXpx'] = pointsInPX[i]['tlXpx'];
         point['tlYpx'] = pointsInPX[i]['tlYpx'];
         point['delXpx'] = pointsInPX[i]['delXpx'];
         point['delYpx'] = pointsInPX[i]['delYpx'];
-        point['R'] = RGB['R'];
-        point['G'] = RGB['G'];
-        point['B'] = RGB['B'];
+        point['R'] = aveRGB['R'];
+        point['G'] = aveRGB['G'];
+        point['B'] = aveRGB['B'];
+        point['L*'] = aveRGB['L*'];
+        point['a*'] = aveRGB['a*'];
+        point['b*'] = aveRGB['b*'];
         pointsRGB.push(point);
     }
     return pointsRGB;
@@ -546,17 +522,91 @@ function getRGB(pointsInPX) {
 // This averages the RGB values over an entire spot //
 
 function averageRGB(pixelArray) {
-    var RGB = {'R':0,'G':0,'B':0};
+    var aveRGB = {'R':0,'G':0,'B':0,'L*':0,'a*':0,'b*':0};
     var n_pixels = Math.round(pixelArray.length/4);
+    var RGB, XYZ, Lab = [];
     for (var k=0, len=pixelArray.length; k<len; k+=4) {
-        RGB['R'] += Math.pow(pixelArray[k+0],2);
-        RGB['G'] += Math.pow(pixelArray[k+1],2);
-        RGB['B'] += Math.pow(pixelArray[k+2],2);
+        RGB = [pixelArray[k+0],pixelArray[k+1],pixelArray[k+2]];
+        XYZ = RGBtoXYZ(RGB);
+        Lab = XYZtoLab(XYZ);
+        aveRGB['L*'] += Lab[0];
+        aveRGB['a*'] += Lab[1];
+        aveRGB['b*'] += Lab[2];
     }
-    RGB['R'] = Math.round(Math.sqrt(RGB['R']/n_pixels));
-    RGB['G'] = Math.round(Math.sqrt(RGB['G']/n_pixels));
-    RGB['B'] = Math.round(Math.sqrt(RGB['B']/n_pixels));
-    return RGB;
+    aveRGB['L*'] = aveRGB['L*']/n_pixels;
+    aveRGB['a*'] = aveRGB['a*']/n_pixels;
+    aveRGB['b*'] = aveRGB['b*']/n_pixels;
+    var RGBstar = XYZtoRGB(LabToXYZ([aveRGB['L*'],aveRGB['a*'],aveRGB['b*']]));
+    aveRGB['R'] = RGBstar[0];
+    aveRGB['G'] = RGBstar[1];
+    aveRGB['B'] = RGBstar[2];
+    return aveRGB;
+}
+
+// This converts the RGB value to CIE XYZ //
+
+function RGBtoXYZ([R,G,B]) {
+    var Rn = R/255;
+    var Gn = G/255;
+    var Bn = B/255;
+    var r = Rn > 0.04045 ? Math.pow((Rn + 0.055)/1.055, 2.4) : (Rn/12.92);
+    var g = Gn > 0.04045 ? Math.pow((Gn + 0.055)/1.055, 2.4) : (Gn/12.92);
+    var b = Bn > 0.04045 ? Math.pow((Bn + 0.055)/1.055, 2.4) : (Bn/12.92);
+    var xn = (r * 0.4124) + (g * 0.3576) + (b * 0.1805);
+    var yn = (r * 0.2126) + (g * 0.7152) + (b * 0.0722);
+    var zn = (r * 0.0193) + (g * 0.1192) + (b * 0.9505);
+    var X = xn * state_vals['RGB_XYZ_white']['Xref'];
+    var Y = yn * state_vals['RGB_XYZ_white']['Yref'];
+    var Z = zn * state_vals['RGB_XYZ_white']['Zref'];
+    return [X,Y,Z];
+}
+
+function XYZtoRGB([X,Y,Z]) {
+    var xn = X / state_vals['RGB_XYZ_white']['Xref'];
+    var yn = Y / state_vals['RGB_XYZ_white']['Yref'];
+    var zn = Z / state_vals['RGB_XYZ_white']['Zref'];
+    var r = (xn * 3.2406) + (yn * -1.5372) + (zn * -0.4986);
+    var g = (xn * -0.9689) + (yn * 1.8758) + (zn * 0.0415);
+    var b = (xn * 0.0557) + (yn * -0.2040) + (zn * 1.0570);
+    var Rn = r > 0.0031308 ? 1.055*Math.pow(r,(1.0/2.4)) - 0.055 : (r/12.92);
+    var Gn = g > 0.0031308 ? 1.055*Math.pow(g,(1.0/2.4)) - 0.055 : (g/12.92);
+    var Bn = b > 0.0031308 ? 1.055*Math.pow(b,(1.0/2.4)) - 0.055 : (b/12.92);
+    var R = Math.round(Rn * 255);
+    var G = Math.round(Gn * 255);
+    var B = Math.round(Bn * 255);
+    return [R,G,B];
+}
+
+// This converts the CIE XYZ to Lab //
+
+function XYZtoLab([X,Y,Z]) {
+    var xn = X / state_vals['XYZ_Lab_white']['Xref'];
+    var yn = Y / state_vals['XYZ_Lab_white']['Yref'];
+    var zn = Z / state_vals['XYZ_Lab_white']['Zref'];
+    var epsilon = 0.008856;
+    var kappa = 903.3;
+    var fx = xn > epsilon ? Math.pow(xn, (1.0/3.0)) : (kappa*xn + 16)/116;
+    var fy = yn > epsilon ? Math.pow(yn, (1.0/3.0)) : (kappa*yn + 16)/116;
+    var fz = zn > epsilon ? Math.pow(zn, (1.0/3.0)) : (kappa*zn + 16)/116;
+    var L = 116*fy - 16;
+    var a = 500*(fx - fy);
+    var b = 200*(fy - fz);
+    return [L,a,b];
+}
+
+function LabToXYZ([L,a,b]) {
+    var fy = (L + 16)/116;
+    var fx = a/500 + fy;
+    var fz = fy - (b/200);
+    var epsilon = 0.008856;
+    var kappa = 903.3;
+    var xn = Math.pow(fx,3) > epsilon ? Math.pow(fx,3) : (116*fx - 16)/kappa;
+    var yn = L > (kappa*epsilon) ? Math.pow(((L + 16)/116),3) : L/kappa;
+    var zn = Math.pow(fz,3) > epsilon ? Math.pow(fz,3) : (116*fz - 16)/kappa;
+    var X = xn * state_vals['XYZ_Lab_white']['Xref'];
+    var Y = yn * state_vals['XYZ_Lab_white']['Yref'];
+    var Z = zn * state_vals['XYZ_Lab_white']['Zref'];
+    return[X,Y,Z];
 }
 
 // This plots the points as rectangles on the overlay canvas //
@@ -596,3 +646,31 @@ function clearOverlay() {
     ctxOverlay.clearRect(0,0,overlay.width,overlay.height);
 }
 
+// This prints an array to the results textarea //
+
+function printResults(listToPrint, keys) {
+    var resultsArea = document.getElementById("results");
+    
+    var resultsList = [];
+    var resultsRow = [];
+    var resultsRowStr = "";
+    var len_i = listToPrint.length;
+    var len_j = keys.length;
+    
+    for (var j=0; j<len_j; j++) {
+        resultsRow.push(keys[j]);
+    }
+    resultsRowStr = resultsRow.join("  ");
+    resultsList.push(resultsRowStr);
+    for (var i=0; i<len_i; i++) {
+        resultsRow = [];
+        for (var j=0; j<len_j; j++) {
+            resultsRow.push(listToPrint[i][keys[j]]);
+        }
+        resultsRowStr = resultsRow.join("  ");
+        resultsList.push(resultsRowStr);
+    }
+    var results = resultsList.join("\n");
+    resultsArea.value = results;
+    return;
+}

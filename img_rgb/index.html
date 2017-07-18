@@ -9,7 +9,7 @@
 	
 	<body>
 	    <header>
-	    	<h1>RGB Extraction from Core Images</h1>
+	    	<h1>RGB and L*ab Extraction from Core Images</h1>
 	    </header>
 	    <nav>
 	    	<a href="..">Back to Front-End Projects</a>
@@ -73,7 +73,7 @@
 	    				<label>Skip the first point in an interval?</label>
 	    				<input type="checkbox" id="skipFirstCheck">
 	    			</div>
-	    			<section class="extraPoints">
+	    			<div class="gridGroup">
 	    				<div class="extraPtsGroup">
 	    					<div>Extra points to add</div>
 	    					<div>(use commas or hit enter to separate)</div>
@@ -89,7 +89,7 @@
 	    					<div>(use commas or hit enter to separate)</div>
 	    					<textarea id="specialAreas"></textarea>
 	    				</div>
-	    			</section>
+	    			</div>
 	    			<div class="gridGroup">
 	    				<label>Fill in points with average RGB?</label>
 	    				<input type="checkbox" id="fillPoints">
@@ -97,6 +97,7 @@
 	    			<input type="button" id="generatePts" value="Generate Points" onclick="generatePoints()" disabled="true">
 	    		</section>
 	    	</section>
+	    	<section id="notice">Results below the image</section>
     		<section id="canvasArea">
     			<canvas id="overlay"></canvas>
     			<canvas id="img_canvas"></canvas>
@@ -110,6 +111,20 @@
     			<textarea id="results" readonly="true"></textarea>
     		</section>
     	</section>
+    	<section id="methods">
+	    	<h3>Methods</h3>
+	    	<p>
+	    		This program fetchs the [R,G,B] values from each pixel in 
+	    		the spot area, and converts the values to [L*,a*,b*] (via CIE XYZ). 
+	    		The L*, a*, and b* values are arithmatically averaged over the region of 
+	    		interest, and the [L*,a*,b*] average is used to back-calculate a 
+	    		representative [R,G,B] average. RGB is non-linear, so direct averaging 
+	    		of pixel values is tricky. The average of linear values (and backwards conversion) 
+	    		is the recommended method in the literature. The average RGB values obtained 
+	    		using this method were compared to the alternative approach, direct RGB 
+	    		sum-of-squares, and the results were extremely similar.
+	    	</p>
+	    </section>
 		<footer>
 			Brian LeVay (2017)
 		</footer>

@@ -1,5 +1,6 @@
 #canvasArea {
     position: relative;
+    margin: 50px 10px;
 }
 
 canvas {
@@ -35,3 +36,10 @@ canvas {
     margin: 50px 0px;
 }
 
+.boundGroup {
+    margin: 10px;
+}
+
+.gridGroup {
+    margin: 10px;
+}
