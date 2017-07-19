@@ -18,6 +18,7 @@ canvas {
 .bounds {
     position: absolute;
     background-color: green;
+    z-index: 3;
 }
 
 #workArea {

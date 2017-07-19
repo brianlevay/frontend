@@ -94,17 +94,17 @@
 	    				<label>Fill in points with average RGB?</label>
 	    				<input type="checkbox" id="fillPoints">
 	    			</div>
-	    			<input type="button" id="generatePts" value="Generate Points" onclick="generatePoints()" disabled="true">
+	    			<input type="button" id="generatePts" value="Generate Points" onclick="generatePoints();" disabled="true">
 	    		</section>
 	    	</section>
 	    	<section id="notice">Results below the image</section>
     		<section id="canvasArea">
-    			<canvas id="overlay"></canvas>
+    			<canvas id="overlay" ondrop="drop_handler(event);" ondragover="dragover_handler(event);"></canvas>
     			<canvas id="img_canvas"></canvas>
-    			<div id="imgTop" class="bounds"></div>
-    			<div id="imgBottom" class="bounds"></div>
-    			<div id="imgLeft" class="bounds"></div>
-    			<div id="imgRight" class="bounds"></div>
+    			<div id="imgTop" class="bounds" draggable="true" ondragstart="dragstart_handler(event);"></div>
+    			<div id="imgBottom" class="bounds" draggable="true" ondragstart="dragstart_handler(event);"></div>
+    			<div id="imgLeft" class="bounds" draggable="true" ondragstart="dragstart_handler(event);"></div>
+    			<div id="imgRight" class="bounds" draggable="true" ondragstart="dragstart_handler(event);"></div>
     		</section>
     		<section id="resultsArea">
     			<div>Results</div>
@@ -144,8 +144,8 @@
 	    			<label>a*</label><input type="text" id="AStxt">
 	    			<label>b*</label><input type="text" id="BStxt">
 	    		</div>
-	    		<input type="button" onclick="rgbTest()" value="RGB to Lab">
-	    		<input type="button" onclick="labTest()" value="Lab to RGB">
+	    		<input type="button" onclick="rgbTest();" value="RGB to Lab">
+	    		<input type="button" onclick="labTest();" value="Lab to RGB">
 	    	</div>
 	    </section>
 		<footer>

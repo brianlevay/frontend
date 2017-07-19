@@ -684,7 +684,7 @@ function drawPoints(points) {
             ctxOverlay.fillStyle = rgbStr;
             ctxOverlay.fillRect(tlX,tlY,delX,delY);
         }
-        ctxOverlay.lineWidth="10";
+        ctxOverlay.lineWidth="5";
         ctxOverlay.strokeStyle="white";
         ctxOverlay.strokeRect(tlX,tlY,delX,delY);
     }
@@ -730,5 +730,37 @@ function printResults(listToPrint, keys) {
     }
     var results = resultsList.join("\n");
     resultsArea.value = results;
+    return;
+}
+
+// These functions handle the drag events for the core boundaries //
+
+function dragstart_handler(ev) {
+    var id = ev.target.id
+    var div = document.getElementById(ev.target.id);
+    var top = div.style.top;
+    var left = div.style.left;
+    var data = ev.target.id + "," + top + "," + left;
+    ev.dataTransfer.setData("text", data);
+    return;
+}
+
+function dragover_handler(ev) {
+    ev.preventDefault();
+    ev.dataTransfer.dropEffect = "move";
+    return;
+}
+
+function drop_handler(ev) {
+    ev.preventDefault();
+    var data = ev.dataTransfer.getData("text").split(",");
+    var origDiv = document.getElementById(data[0]);
+    if ((data[0] == "imgTop")||(data[0] == "imgBottom")) {
+        origDiv.style.top = ev.offsetY + "px";
+    } else {
+        origDiv.style.left = ev.offsetX + "px";
+    }
+    console.log(data);
+    console.log(ev.offsetY, ev.offsetX);
     return;
 }
