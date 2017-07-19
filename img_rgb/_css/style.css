@@ -15,14 +15,10 @@ canvas {
     z-index: 0;
 }
 
-#overlay {
-    z-index: 1;
-}
-
 .bounds {
     position: absolute;
     background-color: green;
-    z-index: 3;
+    z-index: 1;
 }
 
 #workArea {

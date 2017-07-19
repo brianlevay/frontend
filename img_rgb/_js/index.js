@@ -2,6 +2,7 @@
 
 var state_vals = {
     fileName: null,
+    image: null,
     coreTopPx: 0, coreBottomPx: 0, coreLeftPx: 0, coreRightPx: 0,
     boundThickness: 10,
     RGB_XYZ_white: {'Xref':100.0,'Yref':100.0,'Zref':100.0},
@@ -21,7 +22,6 @@ function handleFile(files) {
 function initializeImage(files) {
     var canvasArea = document.getElementById('canvasArea');
     var canvas = document.getElementById('img_canvas');
-    var overlay = document.getElementById('overlay');
     var ctxCanvas = canvas.getContext('2d');
     var imgNew = new Image();
     imgNew.onload = function() {
@@ -31,14 +31,13 @@ function initializeImage(files) {
         canvasArea.style.width = width + "px";
         canvas.height = height;
         canvas.width = width;
-        overlay.height = height;
-        overlay.width = width;
         ctxCanvas.drawImage(imgNew, 0, 0);
         ///// for debugging /////////////////////////////////////
         //ctxCanvas.fillStyle = "rgb(131,124,98)";
         //ctxCanvas.fillRect(0,0,width,height);
         /////////////////////////////////////////////////////////
         state_vals["fileName"] = files[0];
+        state_vals["image"] = imgNew;
         state_vals["coreTopPx"] = 0;
         state_vals["coreBottomPx"] = height;
         state_vals["coreLeftPx"] = 0;
@@ -216,7 +215,6 @@ function generatePoints() {
         var pointsInPX = generatePixelPositions(pointsInMM, geometry);
         var pointsRGB = getRGB(pointsInPX);
         var keys = ['downMM','crossMM','R','G','B','X','Y','Z','L*','a*','b*'];
-        clearOverlay();
         drawPoints(pointsRGB);
         printResults(pointsRGB, keys);
     }
@@ -670,8 +668,10 @@ function labTest() {
 function drawPoints(points) {
     var fillPoints = document.getElementById("fillPoints").checked;
     
-    var overlay = document.getElementById('overlay');
-    var ctxOverlay = overlay.getContext('2d');
+    var canvas = document.getElementById('img_canvas');
+    var ctxCanvas = canvas.getContext('2d');
+    ctxCanvas.drawImage(state_vals["image"], 0, 0);
+    
     var tlX,tlY,delX,delY,R,G,B = 0;
     var rgbStr = "";
     for (var i=0,len=points.length; i<len; i++) {
@@ -684,22 +684,14 @@ function drawPoints(points) {
         B = points[i]['B'];
         rgbStr = "rgb(" + R + "," + G + "," + B + ")";
         if (fillPoints) {
-            ctxOverlay.fillStyle = rgbStr;
-            ctxOverlay.fillRect(tlX,tlY,delX,delY);
+            ctxCanvas.fillStyle = rgbStr;
+            ctxCanvas.fillRect(tlX,tlY,delX,delY);
         }
-        ctxOverlay.lineWidth="5";
-        ctxOverlay.strokeStyle="white";
-        ctxOverlay.strokeRect(tlX,tlY,delX,delY);
+        ctxCanvas.lineWidth="5";
+        ctxCanvas.strokeStyle="white";
+        ctxCanvas.strokeRect(tlX,tlY,delX,delY);
     }
     return;
-}
-
-// This clears the entire overlay canvas so that the points can be redrawn //
-
-function clearOverlay() {
-    var overlay = document.getElementById('overlay');
-    var ctxOverlay = overlay.getContext('2d');
-    ctxOverlay.clearRect(0,0,overlay.width,overlay.height);
 }
 
 // This prints an array to the results textarea //
