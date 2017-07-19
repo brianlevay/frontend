@@ -208,6 +208,8 @@ function resetPointFields() {
 // The button is only active once an image loaded //
 
 function generatePoints() {
+    var btn = document.getElementById("generatePts");
+    btn.disabled = true;
     var geometry = getCoreGeometryInputs();
     if (geometry["error"] == false) {
         var pointsInMM = generatePointsInMM(geometry);
@@ -218,6 +220,7 @@ function generatePoints() {
         drawPoints(pointsRGB);
         printResults(pointsRGB, keys);
     }
+    btn.disabled = false;
     return;
 }
 
@@ -736,11 +739,11 @@ function printResults(listToPrint, keys) {
 // These functions handle the drag events for the core boundaries //
 
 function dragstart_handler(ev) {
-    var id = ev.target.id
+    var id = ev.target.id;
     var div = document.getElementById(ev.target.id);
     var top = div.style.top;
     var left = div.style.left;
-    var data = ev.target.id + "," + top + "," + left;
+    var data = id + "," + top + "," + left;
     ev.dataTransfer.setData("text", data);
     return;
 }
@@ -755,12 +758,45 @@ function drop_handler(ev) {
     ev.preventDefault();
     var data = ev.dataTransfer.getData("text").split(",");
     var origDiv = document.getElementById(data[0]);
-    if ((data[0] == "imgTop")||(data[0] == "imgBottom")) {
-        origDiv.style.top = ev.offsetY + "px";
+    var leftX = ev.offsetX;
+    var rightX = ev.offsetX + state_vals['boundThickness'];
+    var topY = ev.offsetY;
+    var bottomY = ev.offsetY + state_vals['boundThickness'];
+    if (data[0] == "imgTop") {
+        if (bottomY > state_vals['coreBottomPx']) {
+            origDiv.style.top = (state_vals['coreBottomPx']-state_vals['boundThickness']) + "px";
+            state_vals['coreTopPx'] = state_vals['coreBottomPx'];
+        } else {
+            origDiv.style.top = topY + "px";
+            state_vals['coreTopPx'] = bottomY;
+        }
+    } else if (data[0] == "imgBottom") {
+        if (topY < state_vals['coreTopPx']) {
+            origDiv.style.top = state_vals['coreTopPx'] + "px";
+            state_vals['coreBottomPx'] = state_vals['coreTopPx'];
+        } else {
+            origDiv.style.top = topY + "px";
+            state_vals['coreBottomPx'] = topY;
+        }
+    } else if (data[0] == "imgLeft") {
+        if (rightX > state_vals['coreRightPx']) {
+            origDiv.style.left = (state_vals['coreRightPx']-state_vals['boundThickness']) + "px";
+            state_vals['coreLeftPx'] = state_vals['coreRightPx'];
+        } else {
+            origDiv.style.left = leftX + "px";
+            state_vals['coreLeftPx'] = rightX;
+        }
     } else {
-        origDiv.style.left = ev.offsetX + "px";
+        if (leftX < state_vals['coreLeftPx']) {
+            origDiv.style.left = state_vals['coreLeftPx'] + "px";
+            state_vals['coreRightPx'] = state_vals['coreLeftPx'];
+        } else {
+            origDiv.style.left = leftX + "px";
+            state_vals['coreRightPx'] = leftX;
+        }
     }
-    console.log(data);
-    console.log(ev.offsetY, ev.offsetX);
+    updateSliders();
+    updateTxts();
+    updateDivBounds();
     return;
 }

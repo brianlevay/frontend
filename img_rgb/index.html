@@ -97,7 +97,9 @@
 	    			<input type="button" id="generatePts" value="Generate Points" onclick="generatePoints();" disabled="true">
 	    		</section>
 	    	</section>
-	    	<section id="notice">Results below the image</section>
+	    	<section id="notice">
+	    		<div class="heading">Results below the image</div>
+	    	</section>
     		<section id="canvasArea">
     			<canvas id="overlay" ondrop="drop_handler(event);" ondragover="dragover_handler(event);"></canvas>
     			<canvas id="img_canvas"></canvas>
@@ -107,12 +109,12 @@
     			<div id="imgRight" class="bounds" draggable="true" ondragstart="dragstart_handler(event);"></div>
     		</section>
     		<section id="resultsArea">
-    			<div>Results</div>
+    			<div class="heading">Results</div>
     			<textarea id="results" readonly="true"></textarea>
     		</section>
     	</section>
     	<section id="methods">
-	    	<h3>Methods</h3>
+	    	<div class="heading">Methods Overview</div>
 	    	<p>
 	    		This program fetchs the [R,G,B] values from each pixel in 
 	    		the spot area, and converts the values to [L*,a*,b*] (via CIE XYZ). 
@@ -126,24 +128,23 @@
 	    	</p>
 	    </section>
 	    <section id="testArea">
-	    	<div>Test the conversions here</div>
-	    	<div>RGB to Lab and Back</div>
-	    	<div>
-	    		<div>
-	    			<label>R</label><input type="text" id="Rtxt">
-	    			<label>G</label><input type="text" id="Gtxt">
-	    			<label>B</label><input type="text" id="Btxt">
-	    		</div>
-	    		<div>
-	    			<label>X</label><input type="text" id="Xtxt">
-	    			<label>Y</label><input type="text" id="Ytxt">
-	    			<label>Z</label><input type="text" id="Ztxt">
-	    		</div>
-	    		<div>
-	    			<label>L*</label><input type="text" id="Ltxt">
-	    			<label>a*</label><input type="text" id="AStxt">
-	    			<label>b*</label><input type="text" id="BStxt">
-	    		</div>
+	    	<div class="heading">Test the conversions here</div>
+	    	<div class="testGroup">
+	    		<label>R</label><input type="text" id="Rtxt">
+	    		<label>G</label><input type="text" id="Gtxt">
+	    		<label>B</label><input type="text" id="Btxt">
+	    	</div>
+	    	<div class="testGroup">
+	    		<label>X</label><input type="text" id="Xtxt">
+	    		<label>Y</label><input type="text" id="Ytxt">
+	    		<label>Z</label><input type="text" id="Ztxt">
+	    	</div>
+	    	<div class="testGroup">
+	    		<label>L*</label><input type="text" id="Ltxt">
+	    		<label>a*</label><input type="text" id="AStxt">
+	    		<label>b*</label><input type="text" id="BStxt">
+	    	</div>
+	    	<div class="testGroup">
 	    		<input type="button" onclick="rgbTest();" value="RGB to Lab">
 	    		<input type="button" onclick="labTest();" value="Lab to RGB">
 	    	</div>
