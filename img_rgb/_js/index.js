@@ -2,6 +2,7 @@
 
 var state_vals = {
     fileName: null,
+    img: null,
     coreTopPx: 0, coreBottomPx: 0, coreLeftPx: 0, coreRightPx: 0,
     boundThickness: 10,
     RGB_XYZ_white: {'Xref':100.0,'Yref':100.0,'Zref':100.0},
@@ -22,28 +23,26 @@ function initializeImage(files) {
     var canvasArea = document.getElementById('canvasArea');
     var canvas = document.getElementById('img_canvas');
     var overlay = document.getElementById('overlay_canvas');
-    var merge = document.getElementById('merge_canvas');
-    
     var ctxCanvas = canvas.getContext('2d');
-    var ctxMerge = merge.getContext('2d');
-    var imgNew = new Image();
-    imgNew.onload = function() {
-        var height = imgNew.height;
-        var width = imgNew.width;
+    
+    state_vals["img"] = null;
+    state_vals["img"] = new Image();
+    state_vals["img"].onload = function() {
+        var height = state_vals["img"].height;
+        var width = state_vals["img"].width;
         canvasArea.style.height = height + "px";
         canvasArea.style.width = width + "px";
         canvas.height = height;
         canvas.width = width;
         overlay.height = height;
         overlay.width = width;
-        merge.height = height;
-        merge.width = width;
-        ctxCanvas.drawImage(imgNew, 0, 0);
-        ctxMerge.drawImage(imgNew, 0, 0);
+        ctxCanvas.drawImage(state_vals["img"], 0, 0);
+
         ///// for debugging /////////////////////////////////////
         //ctxCanvas.fillStyle = "rgb(131,124,98)";
         //ctxCanvas.fillRect(0,0,width,height);
         /////////////////////////////////////////////////////////
+        
         state_vals["fileName"] = files[0]["name"];
         state_vals["coreTopPx"] = 0;
         state_vals["coreBottomPx"] = height;
@@ -58,7 +57,7 @@ function initializeImage(files) {
         var generateBtn = document.getElementById('generatePts');
         generateBtn.disabled = false;
     };
-    imgNew.src = window.URL.createObjectURL(files[0]);
+    state_vals["img"].src = window.URL.createObjectURL(files[0]);
     return;
 }
 
@@ -217,22 +216,14 @@ function generatePoints() {
     var generateBtn = document.getElementById("generatePts");
     generateBtn.disabled = true;
     
-    var canvas = document.getElementById("img_canvas");
-    var overlay = document.getElementById("overlay_canvas");
-    var merge = document.getElementById("merge_canvas");
-    var ctxMerge = merge.getContext('2d');
-    
     var geometry = getCoreGeometryInputs();
     if (geometry["error"] == false) {
         var pointsInMM = generatePointsInMM(geometry);
         var pointsInPX = generatePixelPositions(pointsInMM, geometry);
         var pointsRGB = getRGB(pointsInPX);
         var keys = ['downMM','crossMM','L*','a*','b*','X','Y','Z','R','G','B'];
-        clearOverlay();
         drawPoints(pointsRGB);
         printResults(pointsRGB, keys);
-        ctxMerge.drawImage(canvas,0,0);
-        ctxMerge.drawImage(overlay,0,0);
     }
     generateBtn.disabled = false;
     return;
@@ -675,16 +666,8 @@ function labTest() {
     return;
 }
 
-// This function clears the overlay canvas //
-
-function clearOverlay() {
-    var overlay = document.getElementById('overlay_canvas');
-    var ctxOverlay = overlay.getContext('2d');
-    ctxOverlay.clearRect(0,0,overlay.width,overlay.height);
-    return;
-}
-
 // This plots the points as rectangles on the overlay canvas //
+// Note that it first overwrites the entire canvas with the core image to form a composite for saving //
 
 function drawPoints(points) {
     var lineRtxt = document.getElementById("lineRtxt").value;
@@ -711,8 +694,11 @@ function drawPoints(points) {
     }
     var rgbLineStr = "rgb(" + lineR + "," + lineG + "," + lineB + ")";
     
+    var canvas = document.getElementById("img_canvas");
     var overlay = document.getElementById('overlay_canvas');
     var ctxOverlay = overlay.getContext('2d');
+    ctxOverlay.drawImage(canvas,0,0); //// ////
+    
     var tlX,tlY,delX,delY,R,G,B = 0;
     var rgbFillStr = "";
     for (var i=0,len=points.length; i<len; i++) {
