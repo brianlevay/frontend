@@ -2,7 +2,6 @@
 
 var state_vals = {
     fileName: null,
-    image: null,
     coreTopPx: 0, coreBottomPx: 0, coreLeftPx: 0, coreRightPx: 0,
     boundThickness: 10,
     RGB_XYZ_white: {'Xref':100.0,'Yref':100.0,'Zref':100.0},
@@ -23,12 +22,10 @@ function initializeImage(files) {
     var canvasArea = document.getElementById('canvasArea');
     var canvas = document.getElementById('img_canvas');
     var overlay = document.getElementById('overlay_canvas');
-    var shadow = document.getElementById('shadow_canvas');
-    canvas.style.display = "block";
-    overlay.style.display = "block";
-    shadow.style.display = "none";
+    var merge = document.getElementById('merge_canvas');
     
     var ctxCanvas = canvas.getContext('2d');
+    var ctxMerge = merge.getContext('2d');
     var imgNew = new Image();
     imgNew.onload = function() {
         var height = imgNew.height;
@@ -39,16 +36,15 @@ function initializeImage(files) {
         canvas.width = width;
         overlay.height = height;
         overlay.width = width;
-        shadow.height = height;
-        shadow.width = width;
+        merge.height = height;
+        merge.width = width;
         ctxCanvas.drawImage(imgNew, 0, 0);
+        ctxMerge.drawImage(imgNew, 0, 0);
         ///// for debugging /////////////////////////////////////
         //ctxCanvas.fillStyle = "rgb(131,124,98)";
         //ctxCanvas.fillRect(0,0,width,height);
         /////////////////////////////////////////////////////////
-        state_vals["shadow"] = shadow;
         state_vals["fileName"] = files[0]["name"];
-        state_vals["image"] = imgNew;
         state_vals["coreTopPx"] = 0;
         state_vals["coreBottomPx"] = height;
         state_vals["coreLeftPx"] = 0;
@@ -218,19 +214,15 @@ function resetPointFields() {
 // The button is only active once an image loaded //
 
 function generatePoints() {
+    var generateBtn = document.getElementById("generatePts");
+    generateBtn.disabled = true;
+    
     var canvas = document.getElementById("img_canvas");
     var overlay = document.getElementById("overlay_canvas");
-    var shadow = document.getElementById("shadow_canvas");
-    canvas.style.display = "block";
-    overlay.style.display = "block";
-    shadow.style.display = "none";
-    
-    var generateBtn = document.getElementById("generatePts");
-    var enableSaveBtn = document.getElementById("enableSaveBtn");
-    var disableSaveBtn = document.getElementById("disableSaveBtn");
-    generateBtn.disabled = true;
-    enableSaveBtn.disabled = true;
-    disableSaveBtn.disabled = true;
+    var merge = document.getElementById("merge_canvas");
+    var ctxMerge = merge.getContext('2d');
+    canvas.style.zIndex = 2;
+    merge.style.zIndex = 0;
     
     var geometry = getCoreGeometryInputs();
     if (geometry["error"] == false) {
@@ -241,10 +233,12 @@ function generatePoints() {
         clearOverlay();
         drawPoints(pointsRGB);
         printResults(pointsRGB, keys);
+        ctxMerge.drawImage(canvas,0,0);
+        ctxMerge.drawImage(overlay,0,0);
     }
     generateBtn.disabled = false;
-    enableSaveBtn.disabled = false;
-    disableSaveBtn.disabled = true;
+    canvas.style.zIndex = 0;
+    merge.style.zIndex = 2;
     return;
 }
 
@@ -689,6 +683,15 @@ function labTest() {
     return;
 }
 
+// This function clears the overlay canvas //
+
+function clearOverlay() {
+    var overlay = document.getElementById('overlay_canvas');
+    var ctxOverlay = overlay.getContext('2d');
+    ctxOverlay.clearRect(0,0,overlay.width,overlay.height);
+    return;
+}
+
 // This plots the points as rectangles on the overlay canvas //
 
 function drawPoints(points) {
@@ -718,8 +721,6 @@ function drawPoints(points) {
     
     var overlay = document.getElementById('overlay_canvas');
     var ctxOverlay = overlay.getContext('2d');
-    ctxOverlay.drawImage(state_vals["image"], 0, 0);
-    
     var tlX,tlY,delX,delY,R,G,B = 0;
     var rgbFillStr = "";
     for (var i=0,len=points.length; i<len; i++) {
@@ -739,15 +740,6 @@ function drawPoints(points) {
         ctxOverlay.strokeStyle=rgbLineStr;
         ctxOverlay.strokeRect(tlX,tlY,delX,delY);
     }
-    return;
-}
-
-// This function clears the overlay canvas //
-
-function clearOverlay() {
-    var overlay = document.getElementById('overlay_canvas');
-    var ctxOverlay = overlay.getContext('2d');
-    ctxOverlay.clearRect(0,0,overlay.width,overlay.height);
     return;
 }
 
@@ -854,46 +846,5 @@ function drop_handler(ev) {
     updateSliders();
     updateTxts();
     updateDivBounds();
-    return;
-}
-
-// These functions swap the shadow canvas, and in the case of the enableSaveAs, combine the two display layers for downloading //
-
-function enableSaveAs() {
-    var enableBtn = document.getElementById("enableSaveBtn");
-    var disableBtn = document.getElementById("disableSaveBtn");
-    enableBtn.disabled = true;
-    disableBtn.disabled = true;
-    
-    var canvas = document.getElementById("img_canvas");
-    var overlay = document.getElementById("overlay_canvas");
-    var shadow = document.getElementById("shadow_canvas");
-    var ctxShadow = shadow.getContext('2d');
-    ctxShadow.drawImage(canvas,0,0);
-    ctxShadow.drawImage(overlay,0,0);
-    
-    canvas.style.display = "none";
-    overlay.style.display = "none";
-    shadow.style.display = "block";
-    
-    disableBtn.disabled = false;
-    return;
-}
-
-function disableSaveAs() {
-    var enableBtn = document.getElementById("enableSaveBtn");
-    var disableBtn = document.getElementById("disableSaveBtn");
-    enableBtn.disabled = true;
-    disableBtn.disabled = true;
-    
-    var canvas = document.getElementById("img_canvas");
-    var overlay = document.getElementById("overlay_canvas");
-    var shadow = document.getElementById("shadow_canvas");
-    
-    canvas.style.display = "block";
-    overlay.style.display = "block";
-    shadow.style.display = "none";
-    
-    enableBtn.disabled = false;
     return;
 }

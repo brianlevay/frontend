@@ -116,21 +116,13 @@
 	    		<div class="heading">Results below the image</div>
 	    	</section>
     		<section id="canvasArea">
-    			<canvas id="shadow_canvas"></canvas>
-    			<canvas id="overlay_canvas" ondrop="drop_handler(event);" ondragover="dragover_handler(event);"></canvas>
     			<canvas id="img_canvas"></canvas>
+    			<canvas id="overlay_canvas"></canvas>
+    			<canvas id="merge_canvas" ondrop="drop_handler(event);" ondragover="dragover_handler(event);"></canvas>
     			<div id="imgTop" class="bounds" draggable="true" ondragstart="dragstart_handler(event);"></div>
     			<div id="imgBottom" class="bounds" draggable="true" ondragstart="dragstart_handler(event);"></div>
     			<div id="imgLeft" class="bounds" draggable="true" ondragstart="dragstart_handler(event);"></div>
     			<div id="imgRight" class="bounds" draggable="true" ondragstart="dragstart_handler(event);"></div>
-    		</section>
-    		<section id="downloadImg">
-    			<div>
-    				To save the core image with the spots marked on it, click the Enable Save As button below and right click on 
-    				the image to "Save As". When you want to generate new points, click "Disable Save As" or just click "Generate Points"
-    			</div>
-    			<input type="button" id="enableSaveBtn" disabled="true" onclick="enableSaveAs();" value="Enable Save As">
-    			<input type="button" id="disableSaveBtn" disabled="true" onclick="disableSaveAs();" value="Disable Save As">
     		</section>
     		<section id="resultsArea">
     			<div class="heading">Results</div>

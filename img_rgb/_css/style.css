@@ -21,8 +21,8 @@ canvas {
     z-index: 1;
 }
 
-#shadow_canvas {
-    display: none;
+#merge_canvas {
+    display: block;
     z-index: 2;
 }
 
