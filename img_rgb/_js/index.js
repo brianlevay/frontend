@@ -221,8 +221,6 @@ function generatePoints() {
     var overlay = document.getElementById("overlay_canvas");
     var merge = document.getElementById("merge_canvas");
     var ctxMerge = merge.getContext('2d');
-    canvas.style.zIndex = 2;
-    merge.style.zIndex = 0;
     
     var geometry = getCoreGeometryInputs();
     if (geometry["error"] == false) {
@@ -237,8 +235,6 @@ function generatePoints() {
         ctxMerge.drawImage(overlay,0,0);
     }
     generateBtn.disabled = false;
-    canvas.style.zIndex = 0;
-    merge.style.zIndex = 2;
     return;
 }
 
@@ -249,7 +245,6 @@ function getCoreGeometryInputs() {
     var hasError = false;
     var numeric = 0;
     geometry["downCoreLength"] = document.getElementById("lengthTxt").value;
-    geometry["crossCoreWidth"] = document.getElementById("widthTxt").value;
     geometry["downCoreSpacing"] = document.getElementById("spacingTxt").value;
     geometry["crossCorePosition"] = document.getElementById("lateralTxt").value;
     geometry["downCoreSpot"] = document.getElementById("downSpotTxt").value;
@@ -479,27 +474,24 @@ function reconcileAreas(originalList, specialAreasList, skipFirst) {
 function generatePixelPositions(pointsInMM, geometry) {
     var pointsInPX = [];
     
-    var coreWidthMM = geometry["crossCoreWidth"];
-    var coreWidthPX = state_vals["coreRightPx"] - state_vals["coreLeftPx"];
     var coreLengthMM = geometry["downCoreLength"];
-    var coreLengthPX = state_vals["coreBottomPx"] - state_vals["coreTopPx"];
     var spotWidthMM = geometry["crossCoreSpot"];
-    var spotWidthPX = Math.round((coreWidthPX/coreWidthMM)*spotWidthMM);
     var spotLengthMM = geometry["downCoreSpot"];
-    var spotLengthPX = Math.round((coreLengthPX/coreLengthMM)*spotLengthMM);
+    var coreLengthPX = state_vals["coreBottomPx"] - state_vals["coreTopPx"];
     
-    var crossSlope = (coreWidthPX/coreWidthMM);
-    var crossIntercept = (state_vals["coreRightPx"]-state_vals["coreLeftPx"])/2 + state_vals["coreLeftPx"] - (spotWidthPX/2);
-    var downSlope = (coreLengthPX/coreLengthMM);
-    var downIntercept = state_vals["coreTopPx"] - (spotLengthPX/2);
+    var slope = (coreLengthPX/coreLengthMM);
+    var spotWidthPX = Math.round(slope*spotWidthMM);
+    var spotLengthPX = Math.round(slope*spotLengthMM);
+    var crossInt = (state_vals["coreRightPx"]-state_vals["coreLeftPx"])/2 + state_vals["coreLeftPx"] - (spotWidthPX/2);
+    var downInt = state_vals["coreTopPx"] - (spotLengthPX/2);
     
     var crossMM,downMM,crossPX,downPX = 0;
     var point = {};
     for (var i=0, len=pointsInMM.length; i<len; i++) {
         crossMM = pointsInMM[i]['crossMM'];
-        crossPX = Math.round(crossSlope*crossMM + crossIntercept);
+        crossPX = Math.round(slope*crossMM + crossInt);
         downMM = pointsInMM[i]['downMM'];
-        downPX = Math.round(downSlope*downMM + downIntercept);
+        downPX = Math.round(slope*downMM + downInt);
         point = {'downMM':downMM,'crossMM':crossMM,'tlXpx':crossPX,'tlYpx':downPX,'delXpx':spotWidthPX,'delYpx':spotLengthPX};
         pointsInPX.push(point);
     }
