@@ -36,7 +36,7 @@ function initializeImage(files) {
         //ctxCanvas.fillStyle = "rgb(131,124,98)";
         //ctxCanvas.fillRect(0,0,width,height);
         /////////////////////////////////////////////////////////
-        state_vals["fileName"] = files[0];
+        state_vals["fileName"] = files[0]["name"];
         state_vals["image"] = imgNew;
         state_vals["coreTopPx"] = 0;
         state_vals["coreBottomPx"] = height;
@@ -214,7 +214,7 @@ function generatePoints() {
         var pointsInMM = generatePointsInMM(geometry);
         var pointsInPX = generatePixelPositions(pointsInMM, geometry);
         var pointsRGB = getRGB(pointsInPX);
-        var keys = ['downMM','crossMM','R','G','B','X','Y','Z','L*','a*','b*'];
+        var keys = ['downMM','crossMM','L*','a*','b*','X','Y','Z','R','G','B'];
         drawPoints(pointsRGB);
         printResults(pointsRGB, keys);
     }
@@ -666,14 +666,36 @@ function labTest() {
 // This plots the points as rectangles on the overlay canvas //
 
 function drawPoints(points) {
+    var lineRtxt = document.getElementById("lineRtxt").value;
+    var lineBtxt = document.getElementById("lineBtxt").value;
+    var lineGtxt = document.getElementById("lineGtxt").value;
+    var lineWidthTxt = document.getElementById("lineWidthTxt").value;
     var fillPoints = document.getElementById("fillPoints").checked;
+
+    var lineR = 255;
+    var lineB = 255;
+    var lineG = 255;
+    var lineWidth = 10;
+    if (isNaN(Number(lineRtxt))==false) {
+        lineR = Math.round(Number(lineRtxt));
+    }
+    if (isNaN(Number(lineGtxt))==false) {
+        lineG = Math.round(Number(lineGtxt));
+    }
+    if (isNaN(Number(lineBtxt))==false) {
+        lineB = Math.round(Number(lineBtxt));
+    } 
+    if (isNaN(Number(lineWidthTxt))==false) {
+        lineWidth = Math.round(Number(lineWidthTxt));
+    }
+    var rgbLineStr = "rgb(" + lineR + "," + lineG + "," + lineB + ")";
     
     var canvas = document.getElementById('img_canvas');
     var ctxCanvas = canvas.getContext('2d');
     ctxCanvas.drawImage(state_vals["image"], 0, 0);
     
     var tlX,tlY,delX,delY,R,G,B = 0;
-    var rgbStr = "";
+    var rgbFillStr = "";
     for (var i=0,len=points.length; i<len; i++) {
         tlX = points[i]['tlXpx'];
         tlY = points[i]['tlYpx'];
@@ -682,13 +704,13 @@ function drawPoints(points) {
         R = points[i]['R'];
         G = points[i]['G'];
         B = points[i]['B'];
-        rgbStr = "rgb(" + R + "," + G + "," + B + ")";
+        rgbFillStr = "rgb(" + R + "," + G + "," + B + ")";
         if (fillPoints) {
-            ctxCanvas.fillStyle = rgbStr;
+            ctxCanvas.fillStyle = rgbFillStr;
             ctxCanvas.fillRect(tlX,tlY,delX,delY);
         }
-        ctxCanvas.lineWidth="5";
-        ctxCanvas.strokeStyle="white";
+        ctxCanvas.lineWidth=lineWidth;
+        ctxCanvas.strokeStyle=rgbLineStr;
         ctxCanvas.strokeRect(tlX,tlY,delX,delY);
     }
     return;
@@ -700,27 +722,34 @@ function printResults(listToPrint, keys) {
     var resultsArea = document.getElementById("results");
     
     var resultsList = [];
-    var resultsRow = [];
+    var resultsRowList = [];
     var resultsRowStr = "";
     var len_i = listToPrint.length;
     var len_j = keys.length;
     var val;
     
-    for (var j=0; j<len_j; j++) {
-        resultsRow.push(keys[j]);
-    }
-    resultsRowStr = resultsRow.join("  ");
+    resultsList.push(state_vals["fileName"]);
+    resultsRowStr = "Top: " + state_vals["coreTopPx"] + ", Bottom: " + state_vals["coreBottomPx"];
     resultsList.push(resultsRowStr);
+    resultsRowStr = "Left: " + state_vals["coreLeftPx"] + ", Right: " + state_vals["coreRightPx"];
+    resultsList.push(resultsRowStr);
+    
+    for (var j=0; j<len_j; j++) {
+        resultsRowList.push(keys[j]);
+    }
+    resultsRowStr = resultsRowList.join("  ");
+    resultsList.push(resultsRowStr);
+    
     for (var i=0; i<len_i; i++) {
-        resultsRow = [];
+        resultsRowList = [];
         for (var j=0; j<len_j; j++) {
             val = listToPrint[i][keys[j]];
             if ((keys[j]=='X')||(keys[j]=='Y')||(keys[j]=='Z')||(keys[j]=='L*')||(keys[j]=='a*')||(keys[j]=='b*')){
                 val = val.toFixed(4);
             }
-            resultsRow.push(val);
+            resultsRowList.push(val);
         }
-        resultsRowStr = resultsRow.join("  ");
+        resultsRowStr = resultsRowList.join("  ");
         resultsList.push(resultsRowStr);
     }
     var results = resultsList.join("\n");

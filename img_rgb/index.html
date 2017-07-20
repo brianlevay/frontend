@@ -91,8 +91,23 @@
 	    				</div>
 	    			</div>
 	    			<div class="gridGroup">
-	    				<label>Fill in points with average RGB?</label>
-	    				<input type="checkbox" id="fillPoints">
+	    				<div>Define the look of the spots drawn on the image</div>
+	    				<div class="extraPtsGroup">
+	    					<label>R</label>
+	    					<input type="text" id="lineRtxt" value="255">
+	    					<label>G</label>
+	    					<input type="text" id="lineGtxt" value="255">
+	    					<label>B</label>
+	    					<input type="text" id="lineBtxt" value="255">
+	    				</div>
+	    				<div class="extraPtsGroup">
+	    					<label>Line width</label>
+	    					<input type="text" id="lineWidthTxt" value="10">
+	    				</div>
+	    				<div class="extraPtsGroup">
+	    					<label>Fill in points with average RGB?</label>
+	    					<input type="checkbox" id="fillPoints">
+	    				</div>
 	    			</div>
 	    			<input type="button" id="generatePts" value="Generate Points" onclick="generatePoints();" disabled="true">
 	    		</section>
