@@ -23,6 +23,11 @@ function initializeImage(files) {
     var canvasArea = document.getElementById('canvasArea');
     var canvas = document.getElementById('img_canvas');
     var overlay = document.getElementById('overlay_canvas');
+    var shadow = document.getElementById('shadow_canvas');
+    canvas.style.display = "block";
+    overlay.style.display = "block";
+    shadow.style.display = "none";
+    
     var ctxCanvas = canvas.getContext('2d');
     var imgNew = new Image();
     imgNew.onload = function() {
@@ -34,11 +39,14 @@ function initializeImage(files) {
         canvas.width = width;
         overlay.height = height;
         overlay.width = width;
+        shadow.height = height;
+        shadow.width = width;
         ctxCanvas.drawImage(imgNew, 0, 0);
         ///// for debugging /////////////////////////////////////
         //ctxCanvas.fillStyle = "rgb(131,124,98)";
         //ctxCanvas.fillRect(0,0,width,height);
         /////////////////////////////////////////////////////////
+        state_vals["shadow"] = shadow;
         state_vals["fileName"] = files[0]["name"];
         state_vals["image"] = imgNew;
         state_vals["coreTopPx"] = 0;
@@ -210,8 +218,20 @@ function resetPointFields() {
 // The button is only active once an image loaded //
 
 function generatePoints() {
-    var btn = document.getElementById("generatePts");
-    btn.disabled = true;
+    var canvas = document.getElementById("img_canvas");
+    var overlay = document.getElementById("overlay_canvas");
+    var shadow = document.getElementById("shadow_canvas");
+    canvas.style.display = "block";
+    overlay.style.display = "block";
+    shadow.style.display = "none";
+    
+    var generateBtn = document.getElementById("generatePts");
+    var enableSaveBtn = document.getElementById("enableSaveBtn");
+    var disableSaveBtn = document.getElementById("disableSaveBtn");
+    generateBtn.disabled = true;
+    enableSaveBtn.disabled = true;
+    disableSaveBtn.disabled = true;
+    
     var geometry = getCoreGeometryInputs();
     if (geometry["error"] == false) {
         var pointsInMM = generatePointsInMM(geometry);
@@ -222,7 +242,9 @@ function generatePoints() {
         drawPoints(pointsRGB);
         printResults(pointsRGB, keys);
     }
-    btn.disabled = false;
+    generateBtn.disabled = false;
+    enableSaveBtn.disabled = false;
+    disableSaveBtn.disabled = true;
     return;
 }
 
@@ -832,5 +854,46 @@ function drop_handler(ev) {
     updateSliders();
     updateTxts();
     updateDivBounds();
+    return;
+}
+
+// These functions swap the shadow canvas, and in the case of the enableSaveAs, combine the two display layers for downloading //
+
+function enableSaveAs() {
+    var enableBtn = document.getElementById("enableSaveBtn");
+    var disableBtn = document.getElementById("disableSaveBtn");
+    enableBtn.disabled = true;
+    disableBtn.disabled = true;
+    
+    var canvas = document.getElementById("img_canvas");
+    var overlay = document.getElementById("overlay_canvas");
+    var shadow = document.getElementById("shadow_canvas");
+    var ctxShadow = shadow.getContext('2d');
+    ctxShadow.drawImage(canvas,0,0);
+    ctxShadow.drawImage(overlay,0,0);
+    
+    canvas.style.display = "none";
+    overlay.style.display = "none";
+    shadow.style.display = "block";
+    
+    disableBtn.disabled = false;
+    return;
+}
+
+function disableSaveAs() {
+    var enableBtn = document.getElementById("enableSaveBtn");
+    var disableBtn = document.getElementById("disableSaveBtn");
+    enableBtn.disabled = true;
+    disableBtn.disabled = true;
+    
+    var canvas = document.getElementById("img_canvas");
+    var overlay = document.getElementById("overlay_canvas");
+    var shadow = document.getElementById("shadow_canvas");
+    
+    canvas.style.display = "block";
+    overlay.style.display = "block";
+    shadow.style.display = "none";
+    
+    enableBtn.disabled = false;
     return;
 }

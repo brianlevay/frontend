@@ -12,17 +12,24 @@ canvas {
 }
 
 #img_canvas {
+    display: block;
     z-index: 0;
 }
 
 #overlay_canvas {
+    display: block;
     z-index: 1;
+}
+
+#shadow_canvas {
+    display: none;
+    z-index: 2;
 }
 
 .bounds {
     position: absolute;
     background-color: green;
-    z-index: 2;
+    z-index: 3;
 }
 
 #workArea {
