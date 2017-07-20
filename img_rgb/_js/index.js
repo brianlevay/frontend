@@ -22,6 +22,7 @@ function handleFile(files) {
 function initializeImage(files) {
     var canvasArea = document.getElementById('canvasArea');
     var canvas = document.getElementById('img_canvas');
+    var overlay = document.getElementById('overlay_canvas');
     var ctxCanvas = canvas.getContext('2d');
     var imgNew = new Image();
     imgNew.onload = function() {
@@ -31,6 +32,8 @@ function initializeImage(files) {
         canvasArea.style.width = width + "px";
         canvas.height = height;
         canvas.width = width;
+        overlay.height = height;
+        overlay.width = width;
         ctxCanvas.drawImage(imgNew, 0, 0);
         ///// for debugging /////////////////////////////////////
         //ctxCanvas.fillStyle = "rgb(131,124,98)";
@@ -215,6 +218,7 @@ function generatePoints() {
         var pointsInPX = generatePixelPositions(pointsInMM, geometry);
         var pointsRGB = getRGB(pointsInPX);
         var keys = ['downMM','crossMM','L*','a*','b*','X','Y','Z','R','G','B'];
+        clearOverlay();
         drawPoints(pointsRGB);
         printResults(pointsRGB, keys);
     }
@@ -690,9 +694,9 @@ function drawPoints(points) {
     }
     var rgbLineStr = "rgb(" + lineR + "," + lineG + "," + lineB + ")";
     
-    var canvas = document.getElementById('img_canvas');
-    var ctxCanvas = canvas.getContext('2d');
-    ctxCanvas.drawImage(state_vals["image"], 0, 0);
+    var overlay = document.getElementById('overlay_canvas');
+    var ctxOverlay = overlay.getContext('2d');
+    ctxOverlay.drawImage(state_vals["image"], 0, 0);
     
     var tlX,tlY,delX,delY,R,G,B = 0;
     var rgbFillStr = "";
@@ -706,13 +710,22 @@ function drawPoints(points) {
         B = points[i]['B'];
         rgbFillStr = "rgb(" + R + "," + G + "," + B + ")";
         if (fillPoints) {
-            ctxCanvas.fillStyle = rgbFillStr;
-            ctxCanvas.fillRect(tlX,tlY,delX,delY);
+            ctxOverlay.fillStyle = rgbFillStr;
+            ctxOverlay.fillRect(tlX,tlY,delX,delY);
         }
-        ctxCanvas.lineWidth=lineWidth;
-        ctxCanvas.strokeStyle=rgbLineStr;
-        ctxCanvas.strokeRect(tlX,tlY,delX,delY);
+        ctxOverlay.lineWidth=lineWidth;
+        ctxOverlay.strokeStyle=rgbLineStr;
+        ctxOverlay.strokeRect(tlX,tlY,delX,delY);
     }
+    return;
+}
+
+// This function clears the overlay canvas //
+
+function clearOverlay() {
+    var overlay = document.getElementById('overlay_canvas');
+    var ctxOverlay = overlay.getContext('2d');
+    ctxOverlay.clearRect(0,0,overlay.width,overlay.height);
     return;
 }
 
