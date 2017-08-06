@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+	<head>
+		<meta charset="utf-8">
+		<title>Mosaic Generator</title>
+	 	<link rel="stylesheet" href="_css/style.css">
+	</head>
+	
+	<body>
+	    <header>
+	    	<h1>Turn Photos Into Mosaics</h1>
+	    </header>
+	    <nav>
+	    	<a href="..">Back to Front-End Projects</a>
+	    </nav>
+	    <section id="fileSelection">
+	    	<div class="heading">Select an image:</div>
+	    	<input type="file" id="input_file" onchange="handleFile(this.files)">
+	    </section>
+	    <section id="zoomSettings">
+	    	<div class="heading">Zoom to change image size:</div>
+	    	<input type="button" id="zoomIn" onclick="updateImage('none','in')" value="Zoom In" disabled="true">
+	    	<input type="button" id="zoomOut" onclick="updateImage('none','out')" value="Zoom Out" disabled="true">
+	    	<input type="button" id="rotateLeft" onclick="updateImage('left','none')" value="Rotate Left" disabled="true">
+	    	<input type="button" id="rotateRight" onclick="updateImage('right','none')" value="Rotate Right" disabled="true">
+	    </section>
+	    <section id="controlSect">
+	        <input type="button" id="generateMosaic" value="Generate Mosaic" onclick="generateMosaic();" disabled="true">
+	    </section>
+	    <section id="canvasArea">
+    		<canvas id="img_canvas"></canvas>
+    		<canvas id="overlay_canvas"></canvas>
+    	</section>
+	    <footer>
+			Brian LeVay (2017)
+		</footer>
+		<script src="_js/index.js"></script>
+	</body>
+</html>
