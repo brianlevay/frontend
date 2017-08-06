@@ -9,15 +9,14 @@ var state_vals = {
     rotation: 0.0
 };
 
-// TOP LEVEL FUNCTION //
-// This function is called from the onchange for the file input //
+// Root function for handling the image loading //
 
 function handleFile(files) {
     initializeImage(files);
     return;
 }
 
-// This function loads the image and resets the fields and sliders as needed //
+// This handles the image loading and enables the buttons //
 
 function initializeImage(files) {
     var canvasArea = document.getElementById('canvasArea');
@@ -43,13 +42,13 @@ function initializeImage(files) {
         ctxCanvas.drawImage(state_vals["img"], 0, 0);
         
         var generateBtn = document.getElementById('generateMosaic');
-        var zoomInBtn = document.getElementById('zoomIn');
-        var zoomOutBtn = document.getElementById('zoomOut');
+        var largerBtn = document.getElementById('largerImg');
+        var smallerBtn = document.getElementById('smallerImg');
         var rotateLeftBtn = document.getElementById('rotateLeft');
         var rotateRightBtn = document.getElementById('rotateRight');
         generateBtn.disabled = false;
-        zoomInBtn.disabled = false;
-        zoomOutBtn.disabled = false;
+        largerBtn.disabled = false;
+        smallerBtn.disabled = false;
         rotateLeftBtn.disabled = false;
         rotateRightBtn.disabled = false;
     };
@@ -57,45 +56,65 @@ function initializeImage(files) {
     return;
 }
 
-function generateMosaic() {
-    return;
-}
+// This handles redrawing the image on the canvas due to changes in size or rotation //
 
-function updateImage(direction, zoom) {
+function updateImage(direction, sizeChange) {
     var canvasArea = document.getElementById('canvasArea');
     var canvas = document.getElementById('img_canvas');
     var overlay = document.getElementById('overlay_canvas');
     var ctxCanvas = canvas.getContext('2d');
     if (direction == "right") {
         state_vals["rotation"] = state_vals["rotation"] + 90.0;
+        if (state_vals["rotation"] >= 360) {state_vals["rotation"] = state_vals["rotation"] - 360;}
     } else if (direction == "left") {
         state_vals["rotation"] = state_vals["rotation"] - 90.0;
+        if (state_vals["rotation"] < 0) {state_vals["rotation"] = state_vals["rotation"] + 360;}
     }
     var mult = 1.0;
-    if (zoom == "in") {
+    if (sizeChange == "larger") {
         mult = (1.0/0.9);
-    } else if (zoom == "out") {
+    } else if (sizeChange == "smaller") {
         mult = (0.9/1.0);
     }
-    state_vals["displayHeight"] = Math.round(state_vals["displayHeight"] * mult, 0);
-    state_vals["displayWidth"] = Math.round(state_vals["displayWidth"] * mult, 0);
+    var newHeight = Math.round(state_vals["displayHeight"] * mult, 0);
+    var newWidth = Math.round(state_vals["displayWidth"] * mult, 0);
+    state_vals["displayHeight"] = newHeight;
+    state_vals["displayWidth"] = newWidth;
     
-    //ctxCanvas.save();
-    //ctxCanvas.translate(state_vals["displayWidth"]/2, state_vals["displayHeight"]/2);
-    //ctxCanvas.rotate(state_vals["rotation"]*Math.PI/180);
-    //ctxCanvas.translate(-state_vals["displayWidth"]/2, -state_vals["displayHeight"]/2);
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    if ((state_vals["rotation"] == 0.0) || (state_vals["rotation"] == 180.0)) {
+        canvasArea.style.height = state_vals["displayHeight"] + "px";
+        canvasArea.style.width = state_vals["displayWidth"] + "px";
+        canvas.height = state_vals["displayHeight"];
+        canvas.width = state_vals["displayWidth"];
+        overlay.height = state_vals["displayHeight"];
+        overlay.width = state_vals["displayWidth"];
+    } else {
+        canvasArea.style.height = state_vals["displayWidth"] + "px";
+        canvasArea.style.width = state_vals["displayHeight"] + "px";
+        canvas.height = state_vals["displayWidth"];
+        canvas.width = state_vals["displayHeight"];
+        overlay.height = state_vals["displayWidth"];
+        overlay.width = state_vals["displayHeight"];
+    }
     
-    canvasArea.style.height = state_vals["displayHeight"] + "px";
-    canvasArea.style.width = state_vals["displayWidth"] + "px";
-    canvas.height = state_vals["displayHeight"];
-    canvas.width = state_vals["displayWidth"];
-    overlay.height = state_vals["displayHeight"];
-    overlay.width = state_vals["displayWidth"];
-    //ctxCanvas.drawImage(state_vals["img"], 0, 0, state_vals["imgWidth"], state_vals["imgHeight"]);
-    ctxCanvas.drawImage(state_vals["img"], 0, 0, state_vals["displayWidth"], state_vals["displayHeight"]);
-    //ctxCanvas.restore();
+    ctxCanvas.save();
+    ctxCanvas.rotate(state_vals["rotation"]*Math.PI/180);
+    if (state_vals["rotation"] == 0.0) {
+        ctxCanvas.drawImage(state_vals["img"], 0, 0, newWidth, newHeight);
+    } else if (state_vals["rotation"] == 90.0) {
+        ctxCanvas.drawImage(state_vals["img"], 0, -newHeight, newWidth, newHeight);
+    } else if (state_vals["rotation"] == 180.0) {
+        ctxCanvas.drawImage(state_vals["img"], -newWidth, -newHeight, newWidth, newHeight);
+    } else {
+        ctxCanvas.drawImage(state_vals["img"], -newWidth, 0, newWidth, newHeight);
+    }
+    ctxCanvas.restore();
     return;
 }
 
+// This will be the root function for executing the mosaic drawing //
 
-
+function generateMosaic() {
+    return;
+}
