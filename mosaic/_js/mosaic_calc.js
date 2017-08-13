@@ -17,7 +17,6 @@ function run(message) {
     var imgData = message.data.contents.imgData;
     var pixels = imgData.data;
     var width = message.data.contents.width;
-    var height = message.data.contents.height;
     
     var rgbSpots = [];
     var rgbSpot = {};

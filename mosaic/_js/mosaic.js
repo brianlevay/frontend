@@ -14,7 +14,7 @@ var state_vals = {
 // This handles the web worker events //
 
 window.onload = function(){
-    var worker = new Worker("_js/rgb.js");
+    var worker = new Worker("_js/mosaic_calc.js");
     state_vals['worker'] = worker;
     state_vals['worker'].addEventListener("message", workerCompletion, false);
 };
