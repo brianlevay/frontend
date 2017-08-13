@@ -13,19 +13,24 @@ self.addEventListener("message", run);
 // rgb spot format: {'tlX','tlY','delX','delY','aveRGB':{'R','G','B','X','Y','Z','L*','a','b'} //
 
 function run(message) {
-    var rawSpots = message.data.rawSpots;
+    var pts = message.data.contents.pts;
+    var imgData = message.data.contents.imgData;
+    var pixels = imgData.data;
+    var width = message.data.contents.width;
+    var height = message.data.contents.height;
+    
     var rgbSpots = [];
     var rgbSpot = {};
     var aveRGB = [];
     
-    var nSpots = rawSpots.length;
+    var nSpots = pts.length;
     var tlX, tlY, delX, delY;
     for (var n = 0; n < nSpots; n++) {
-        tlX = rawSpots[n]['tlX'];
-        tlY = rawSpots[n]['tlY'];
-        delX = rawSpots[n]['delX'];
-        delY = rawSpots[n]['delY'];
-        aveRGB = averageRGB(rawSpots[n]['pixelArray']);
+        tlX = pts[n]['tlX'];
+        tlY = pts[n]['tlY'];
+        delX = pts[n]['delX'];
+        delY = pts[n]['delY'];
+        aveRGB = averageRGB(pixels, width, tlX, tlY, delX, delY);
         rgbSpot = {'tlX': tlX, 'tlY': tlY, 'delX': delX, 'delY': delY, 'aveRGB': aveRGB};
         rgbSpots.push(rgbSpot);
     }
@@ -38,21 +43,30 @@ function run(message) {
 
 // This averages the RGB values over an entire spot //
 
-function averageRGB(pixelArray) {
+function averageRGB(pixels, width, tlX, tlY, delX, delY) {
     var aveRGB = {'R':0,'G':0,'B':0,'X':0,'Y':0,'Z':0,'L*':0,'a*':0,'b*':0};
-    var n_pixels = Math.round(pixelArray.length/4);
     var RGB, XYZ, Lab = [];
-    for (var k=0, len=pixelArray.length; k<len; k+=4) {
-        RGB = [pixelArray[k+0],pixelArray[k+1],pixelArray[k+2]];
-        XYZ = RGBtoXYZ(RGB);
-        Lab = XYZtoLab(XYZ);
-        aveRGB['L*'] += Lab[0];
-        aveRGB['a*'] += Lab[1];
-        aveRGB['b*'] += Lab[2];
+    var x, y, i, R, G, B;
+    var nPixelsTot = pixels.length;
+    for (var r = 0; r < delY; r++) {
+        for (var c = 0; c < delX; c++) {
+            x = tlX + c;
+            y = tlY + r;
+            i = ((y * width) + x) * 4;
+            if ((i+2) < nPixelsTot) {
+                RGB = [pixels[i+0],pixels[i+1],pixels[i+2]];
+                XYZ = RGBtoXYZ(RGB);
+                Lab = XYZtoLab(XYZ);
+                aveRGB['L*'] += Lab[0];
+                aveRGB['a*'] += Lab[1];
+                aveRGB['b*'] += Lab[2];
+            }
+        }
     }
-    aveRGB['L*'] = aveRGB['L*']/n_pixels;
-    aveRGB['a*'] = aveRGB['a*']/n_pixels;
-    aveRGB['b*'] = aveRGB['b*']/n_pixels;
+    var nPixelsSpot = delX*delY;
+    aveRGB['L*'] = aveRGB['L*']/nPixelsSpot;
+    aveRGB['a*'] = aveRGB['a*']/nPixelsSpot;
+    aveRGB['b*'] = aveRGB['b*']/nPixelsSpot;
     var XYZ_ave = LabToXYZ([aveRGB['L*'],aveRGB['a*'],aveRGB['b*']]);
     aveRGB['X'] = XYZ_ave[0];
     aveRGB['Y'] = XYZ_ave[1];

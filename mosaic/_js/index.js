@@ -149,27 +149,33 @@ function generateMosaic() {
     var nTilesWidthUser = Number(document.getElementById("nTilesWidth").value);
     if ((isNaN(nTilesWidthUser)==true) || (nTilesWidthUser < 1) || (nTilesWidthUser > 100)) {
         alert("Not a valid number of tiles in X direction");
+        generateBtn.disabled = false;
+        largerBtn.disabled = false;
+        smallerBtn.disabled = false;
+        rotateLeftBtn.disabled = false;
+        rotateRightBtn.disabled = false;
     } else {
         var nTilesWidth = nTilesWidthUser;
         var tileWidth = Math.ceil(canvas.width / nTilesWidth);
         var tileHeight = tileWidth;
         var nTilesHeight = Math.ceil(canvas.height / tileHeight);
         
-        var rawSpots = [];
-        var rawSpot = {};
-        var pixelArray = [];
+        var pts = [];
+        var point = {};
+        var imgData;
         var tlX, tlY;
         for (var i = 0; i < nTilesHeight; i++) {
             for (var j = 0; j < nTilesWidth; j++) {
                 tlX = (j*tileWidth);
                 tlY = (i*tileHeight);
-                pixelArray = ctxCanvas.getImageData(tlX, tlY, tileWidth, tileHeight).data;
-                rawSpot = {'tlX': tlX, 'tlY': tlY, 'delX': tileWidth, 'delY': tileHeight, 'pixelArray': pixelArray};
-                rawSpots.push(rawSpot);
+                point = {'tlX': tlX, 'tlY': tlY, 'delX': tileWidth, 'delY': tileHeight};
+                pts.push(point);
             }
         }
+        imgData = ctxCanvas.getImageData(0, 0, canvas.width, canvas.height);
+        var contents = {'pts': pts, 'imgData': imgData, 'width': canvas.width, 'height': canvas.height};
+        state_vals['worker'].postMessage({"contents": contents});
     }
-    state_vals['worker'].postMessage({"rawSpots": rawSpots});
     return;
 }
 
@@ -195,7 +201,7 @@ function drawMosaic(rgbSpots) {
         ctxOverlay.fillRect(rgbSpots[n]['tlX'], rgbSpots[n]['tlY'], rgbSpots[n]['delX'], rgbSpots[n]['delY']);
         ctxOverlay.strokeRect(rgbSpots[n]['tlX'], rgbSpots[n]['tlY'], rgbSpots[n]['delX'], rgbSpots[n]['delY']);
     }
-        
+    
     generateBtn.disabled = false;
     largerBtn.disabled = false;
     smallerBtn.disabled = false;
