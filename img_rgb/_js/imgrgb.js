@@ -39,7 +39,6 @@ function handleFile(files) {
 function initializeImage(files) {
     var canvasArea = document.getElementById('canvasArea');
     var canvas = document.getElementById('img_canvas');
-    var overlay = document.getElementById('overlay_canvas');
     var ctxCanvas = canvas.getContext('2d');
     
     state_vals["img"] = null;
@@ -51,15 +50,8 @@ function initializeImage(files) {
         canvasArea.style.width = width + "px";
         canvas.height = height;
         canvas.width = width;
-        overlay.height = height;
-        overlay.width = width;
         ctxCanvas.drawImage(state_vals["img"], 0, 0);
 
-        ///// for debugging /////////////////////////////////////
-        //ctxCanvas.fillStyle = "rgb(131,124,98)";
-        //ctxCanvas.fillRect(0,0,width,height);
-        /////////////////////////////////////////////////////////
-        
         state_vals["fileName"] = files[0]["name"];
         state_vals["coreTopPx"] = 0;
         state_vals["coreBottomPx"] = height;
@@ -508,8 +500,8 @@ function generatePixelPositions(pointsInMM, geometry) {
     return pointsInPX;
 }
 
-// This plots the points as rectangles on the overlay canvas //
-// Note that it first overwrites the entire canvas with the core image to form a composite for saving //
+// This plots the points as rectangles on the canvas //
+// Note that it first overwrites the entire canvas with the core image //
 
 function drawPoints(points) {
     var lineRtxt = document.getElementById("lineRtxt").value;
@@ -537,9 +529,8 @@ function drawPoints(points) {
     var rgbLineStr = "rgb(" + lineR + "," + lineG + "," + lineB + ")";
     
     var canvas = document.getElementById("img_canvas");
-    var overlay = document.getElementById('overlay_canvas');
-    var ctxOverlay = overlay.getContext('2d');
-    ctxOverlay.drawImage(canvas,0,0); //// ////
+    var ctxCanvas = canvas.getContext('2d');
+    ctxCanvas.drawImage(state_vals["img"],0,0);
     
     var tlX,tlY,delX,delY,R,G,B = 0;
     var rgbFillStr = "";
@@ -553,12 +544,12 @@ function drawPoints(points) {
         B = points[i]['aveRGB']['B'];
         rgbFillStr = "rgb(" + R + "," + G + "," + B + ")";
         if (fillPoints) {
-            ctxOverlay.fillStyle = rgbFillStr;
-            ctxOverlay.fillRect(tlX,tlY,delX,delY);
+            ctxCanvas.fillStyle = rgbFillStr;
+            ctxCanvas.fillRect(tlX,tlY,delX,delY);
         }
-        ctxOverlay.lineWidth=lineWidth;
-        ctxOverlay.strokeStyle=rgbLineStr;
-        ctxOverlay.strokeRect(tlX,tlY,delX,delY);
+        ctxCanvas.lineWidth=lineWidth;
+        ctxCanvas.strokeStyle=rgbLineStr;
+        ctxCanvas.strokeRect(tlX,tlY,delX,delY);
     }
     var generateBtn = document.getElementById("generatePts");
     generateBtn.disabled = false;

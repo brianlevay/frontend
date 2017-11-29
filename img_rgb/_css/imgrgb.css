@@ -16,11 +16,6 @@ canvas {
     z-index: 0;
 }
 
-#overlay_canvas {
-    display: block;
-    z-index: 1;
-}
-
 .bounds {
     position: absolute;
     background-color: green;
