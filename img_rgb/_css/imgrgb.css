@@ -2,16 +2,12 @@ body {
     font-family: Arial;
 }
 
-#canvasArea {
+#displayArea {
     position: relative;
     margin: 50px 10px;
 }
 
-canvas {
-    position: absolute;
-}
-
-#img_canvas {
+#img_display {
     display: block;
     z-index: 0;
 }

@@ -4,7 +4,10 @@
 var state_vals = {
     worker: null,
     fileName: null,
-    img: null,
+    imgOrig: null,
+    imgDisplay: null,
+    canvas: null,
+    context: null,
     coreTopPx: 0, coreBottomPx: 0, coreLeftPx: 0, coreRightPx: 0,
     boundThickness: 10
 };
@@ -15,6 +18,9 @@ window.onload = function(){
     var worker = new Worker("_js/imgrgb_calc.js");
     state_vals['worker'] = worker;
     state_vals['worker'].addEventListener("message", workerCompletion, false);
+    state_vals['canvas'] = document.createElement('canvas');
+    state_vals['context'] = state_vals['canvas'].getContext('2d');
+    state_vals['imgDisplay'] = document.getElementById("img_display");
 };
 
 function workerCompletion(message) {
@@ -37,20 +43,18 @@ function handleFile(files) {
 // This function loads the image and resets the fields and sliders as needed //
 
 function initializeImage(files) {
-    var canvasArea = document.getElementById('canvasArea');
-    var canvas = document.getElementById('img_canvas');
-    var ctxCanvas = canvas.getContext('2d');
-    
-    state_vals["img"] = null;
-    state_vals["img"] = new Image();
-    state_vals["img"].onload = function() {
-        var height = state_vals["img"].height;
-        var width = state_vals["img"].width;
-        canvasArea.style.height = height + "px";
-        canvasArea.style.width = width + "px";
-        canvas.height = height;
-        canvas.width = width;
-        ctxCanvas.drawImage(state_vals["img"], 0, 0);
+    state_vals["imgOrig"] = null;
+    state_vals["imgOrig"] = new Image();
+    state_vals["imgOrig"].onload = function() {
+        var height = state_vals["imgOrig"].height;
+        var width = state_vals["imgOrig"].width;
+        var displayArea = document.getElementById('displayArea');
+        
+        state_vals['canvas'].height = height;
+        state_vals['canvas'].width = width;
+        displayArea.style.height = height + "px";
+        displayArea.style.width = width + "px";
+        state_vals['context'].drawImage(state_vals["imgOrig"], 0, 0);
 
         state_vals["fileName"] = files[0]["name"];
         state_vals["coreTopPx"] = 0;
@@ -66,7 +70,8 @@ function initializeImage(files) {
         var generateBtn = document.getElementById('generatePts');
         generateBtn.disabled = false;
     };
-    state_vals["img"].src = window.URL.createObjectURL(files[0]);
+    state_vals["imgOrig"].src = window.URL.createObjectURL(files[0]);
+    state_vals["imgDisplay"].src = window.URL.createObjectURL(files[0]);
     return;
 }
 
@@ -222,8 +227,6 @@ function resetPointFields() {
 // The button is only active once an image loaded //
 
 function generatePoints() {
-    var canvas = document.getElementById('img_canvas');
-    var ctxCanvas = canvas.getContext('2d');
     var generateBtn = document.getElementById("generatePts");
     generateBtn.disabled = true;
     
@@ -231,8 +234,8 @@ function generatePoints() {
     if (geometry["error"] == false) {
         var pointsInMM = generatePointsInMM(geometry);
         var pointsInPX = generatePixelPositions(pointsInMM, geometry);
-        var imgData = ctxCanvas.getImageData(0, 0, canvas.width, canvas.height);
-        var contents = {'type': 'rgbSpots', 'pts': pointsInPX, 'imgData': imgData, 'width': canvas.width, 'height': canvas.height};
+        var imgData = state_vals['context'].getImageData(0, 0, state_vals['canvas'].width, state_vals['canvas'].height);
+        var contents = {'type': 'rgbSpots', 'pts': pointsInPX, 'imgData': imgData, 'width': state_vals['canvas'].width, 'height': state_vals['canvas'].height};
         state_vals['worker'].postMessage({"contents": contents});
     } else {
         generateBtn.disabled = false;
@@ -528,9 +531,7 @@ function drawPoints(points) {
     }
     var rgbLineStr = "rgb(" + lineR + "," + lineG + "," + lineB + ")";
     
-    var canvas = document.getElementById("img_canvas");
-    var ctxCanvas = canvas.getContext('2d');
-    ctxCanvas.drawImage(state_vals["img"],0,0);
+    state_vals['context'].drawImage(state_vals["imgOrig"],0,0);
     
     var tlX,tlY,delX,delY,R,G,B = 0;
     var rgbFillStr = "";
@@ -544,13 +545,15 @@ function drawPoints(points) {
         B = points[i]['aveRGB']['B'];
         rgbFillStr = "rgb(" + R + "," + G + "," + B + ")";
         if (fillPoints) {
-            ctxCanvas.fillStyle = rgbFillStr;
-            ctxCanvas.fillRect(tlX,tlY,delX,delY);
+            state_vals['context'].fillStyle = rgbFillStr;
+            state_vals['context'].fillRect(tlX,tlY,delX,delY);
         }
-        ctxCanvas.lineWidth=lineWidth;
-        ctxCanvas.strokeStyle=rgbLineStr;
-        ctxCanvas.strokeRect(tlX,tlY,delX,delY);
+        state_vals['context'].lineWidth=lineWidth;
+        state_vals['context'].strokeStyle=rgbLineStr;
+        state_vals['context'].strokeRect(tlX,tlY,delX,delY);
     }
+    state_vals["imgDisplay"].src = state_vals["canvas"].toDataURL("image/jpeg");
+    
     var generateBtn = document.getElementById("generatePts");
     generateBtn.disabled = false;
     return;
