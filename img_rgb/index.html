@@ -22,39 +22,34 @@
 	    		</section>
 	    		<section id="edgeSelection" class="ctrlsSubsection">
 	    			<div class="heading">Define the edges of the image:</div>
-	    			<div><i>(Use the sliders and text areas, or drag the boundaries on the image itself)</i></div>
+	    			<div><i>(Use the text areas, or drag the boundaries on the image itself)</i></div>
 	    			<div class="boundGroup">
 	    				<label>Left</label>
-	    				<input type="range" id="leftSlider">
 	    				<input type="text" id="leftTxt">
 	    			</div>
 	    			<div class="boundGroup">
 	    				<label>Right</label>
-	    				<input type="range" id="rightSlider">
 	    				<input type="text" id="rightTxt">
 	    			</div>
 	    			<div class="boundGroup">
 	    				<label>Top</label>
-	    				<input type="range" id="topSlider">
 	    				<input type="text" id="topTxt">
 	    			</div>
 	    			<div class="boundGroup">
 	    				<label>Bottom</label>
-	    				<input type="range" id="bottomSlider">
 	    				<input type="text" id="bottomTxt">
 	    			</div>
 	    		</section>
-	    		<section id="gridSetup" class="ctrlsSubsection">
-	    			<div class="heading">Define the core length and point spacing (mm):</div>
-	    			<div><i>(Note that this assumes the X and Y mm-px relationships are the same)</i></div>
+	    		<section id="lengthSetup" class="ctrlsSubsection">
+	    			<div class="heading">Enter the length of the section within the cropped area (mm):</div>
+	    			<div><i>(Note that this program assumes the X and Y mm-px relationships are the same)</i></div>
 	    			<div class="gridGroup">
-	    				<label>Down-Core Length</label>
+	    				<label>Cropped Core Length</label>
 	    				<input type="text" id="lengthTxt">
 	    			</div>
-	    			<div class="gridGroup">
-	    				<label>Down-Core Spacing</label>
-	    				<input type="text" id="spacingTxt">
-	    			</div>
+	    		</section>
+	    		<section id="gridSetup" class="ctrlsSubsection">
+	    			<div class="heading">Add a new series of points:</div>
 	    			<div class="gridGroup">
 	    				<label>Cross-Core Position</label>
 	    				<input type="text" id="lateralTxt">
@@ -68,25 +63,9 @@
 	    				<input type="text" id="crossSpotTxt">
 	    			</div>
 	    			<div class="gridGroup">
-	    				<label>Skip the first point in an interval?</label>
-	    				<input type="checkbox" id="skipFirstCheck">
-	    			</div>
-	    			<div class="gridGroup">
-	    				<div class="extraPtsGroup">
-	    					<div>Extra points to add</div>
-	    					<div>(use commas or hit enter to separate)</div>
-	    					<textarea id="addedPoints"></textarea>
-	    				</div>
-	    				<div class="extraPtsGroup">
-	    					<div>Points to skip</div>
-	    					<div>(use commas or hit enter to separate)</div>
-	    					<textarea id="skippedPoints"></textarea>
-	    				</div>
-	    				<div class="extraPtsGroup">
-	    					<div>Special areas [Start-End-Step]</div>
-	    					<div>(use commas or hit enter to separate)</div>
-	    					<textarea id="specialAreas"></textarea>
-	    				</div>
+	    				<div>X positions for points:</div>
+	    				<div>(use commas or hit enter to separate)</div>
+	    				<textarea id="addedPoints"></textarea>
 	    			</div>
 	    			<div class="gridGroup">
 	    				<div>Define the look of the spots drawn on the image</div>

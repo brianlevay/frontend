@@ -61,9 +61,7 @@ function initializeImage(files) {
         state_vals["coreBottomPx"] = height;
         state_vals["coreLeftPx"] = 0;
         state_vals["coreRightPx"] = width;
-        setSliderRanges();
         updateDivBounds();
-        updateSliders();
         updateTxts();
         attachBoundListeners();
         resetPointFields();
@@ -75,21 +73,7 @@ function initializeImage(files) {
     return;
 }
 
-// This function adjusts the max slider pixel values to match the size of the newly loaded image //
-
-function setSliderRanges() {
-    var topSlider = document.getElementById('topSlider');
-    var bottomSlider = document.getElementById('bottomSlider');
-    var leftSlider = document.getElementById('leftSlider');
-    var rightSlider = document.getElementById('rightSlider');
-    topSlider.max = state_vals["coreBottomPx"];
-    bottomSlider.max = state_vals["coreBottomPx"];
-    leftSlider.max = state_vals["coreRightPx"];
-    rightSlider.max = state_vals["coreRightPx"];
-    return;
-}
-
-// These functions update the sliders, text boxes, and divs for the core boundary based on the state values //
+// These functions update the text boxes and divs for the core boundary based on the state values //
 
 function updateDivBounds() {
     var topDiv = document.getElementById('imgTop');
@@ -120,18 +104,6 @@ function updateDivBounds() {
     return;
 }
 
-function updateSliders() {
-    var topSlider = document.getElementById('topSlider');
-    var bottomSlider = document.getElementById('bottomSlider');
-    var leftSlider = document.getElementById('leftSlider');
-    var rightSlider = document.getElementById('rightSlider');
-    topSlider.value = state_vals["coreTopPx"];
-    bottomSlider.value = state_vals["coreBottomPx"];
-    leftSlider.value = state_vals["coreLeftPx"];
-    rightSlider.value = state_vals["coreRightPx"];
-    return;
-}
-
 function updateTxts() {
     var topTxt = document.getElementById('topTxt');
     var bottomTxt = document.getElementById('bottomTxt');
@@ -144,30 +116,14 @@ function updateTxts() {
     return;
 }
 
-// This function attaches the event handlers so that any slider or text change updates all boundary DOM elements as well as the state //
+// This function attaches the event handlers so that any text change updates all boundary DOM elements as well as the state //
 
 function attachBoundListeners() {
-    var topSlider = document.getElementById('topSlider');
-    var bottomSlider = document.getElementById('bottomSlider');
-    var leftSlider = document.getElementById('leftSlider');
-    var rightSlider = document.getElementById('rightSlider');
     var topTxt = document.getElementById('topTxt');
     var bottomTxt = document.getElementById('bottomTxt');
     var leftTxt = document.getElementById('leftTxt');
     var rightTxt = document.getElementById('rightTxt');
     
-    topSlider.onchange = function(){
-        updateBoundaries(topSlider, "coreTopPx", "coreBottomPx", "smaller");
-    };
-    bottomSlider.onchange = function(){
-        updateBoundaries(bottomSlider, "coreBottomPx", "coreTopPx", "larger");
-    };
-    leftSlider.onchange = function(){
-        updateBoundaries(leftSlider, "coreLeftPx", "coreRightPx", "smaller");
-    };
-    rightSlider.onchange = function(){
-        updateBoundaries(rightSlider, "coreRightPx", "coreLeftPx", "larger");
-    };
     topTxt.onchange = function(){
         updateBoundaries(topTxt, "coreTopPx", "coreBottomPx", "smaller");
     };
@@ -201,7 +157,6 @@ function updateBoundaries(element, boundary, opposite, constraint) {
             }
         }
     }
-    updateSliders();
     updateTxts();
     updateDivBounds();
     return;
@@ -211,13 +166,8 @@ function updateBoundaries(element, boundary, opposite, constraint) {
 
 function resetPointFields() {
     var addedPoints = document.getElementById("addedPoints");
-    var skippedPoints = document.getElementById("skippedPoints");
-    var specialAreas = document.getElementById("specialAreas");
     var results = document.getElementById("results");
-    
     addedPoints.value = "";
-    skippedPoints.value = "";
-    specialAreas.value = "";
     results.value = "";
     return;
 }
@@ -250,7 +200,6 @@ function getCoreGeometryInputs() {
     var hasError = false;
     var numeric = 0;
     geometry["downCoreLength"] = document.getElementById("lengthTxt").value;
-    geometry["downCoreSpacing"] = document.getElementById("spacingTxt").value;
     geometry["crossCorePosition"] = document.getElementById("lateralTxt").value;
     geometry["downCoreSpot"] = document.getElementById("downSpotTxt").value;
     geometry["crossCoreSpot"] = document.getElementById("crossSpotTxt").value;
@@ -275,36 +224,20 @@ function getCoreGeometryInputs() {
     return geometry;
 }
 
-// This function reads the special point text boxes and generates the list of body-centered points, in millimeters //
+// These functions convert the user entered information to a list of X,Y points in millimeters //
 
 function generatePointsInMM(geometry) {
     var pointsInMM = [];
-    
-    var skipFirst = document.getElementById("skipFirstCheck").checked;
     var addedPoints = document.getElementById("addedPoints").value;
-    var skippedPoints = document.getElementById("skippedPoints").value;
-    var specialAreas = document.getElementById("specialAreas").value;
-
-    var initialList = generateArray(0,geometry["downCoreLength"],geometry["downCoreSpacing"],skipFirst);
-    
-    var addedList = getPointsList(addedPoints, "extra points");
-    var skippedList = getPointsList(skippedPoints, "skip points");
-    var specialList = getSpecialAreaList(specialAreas);
-    
-    var mergedList = mergeLists(initialList, addedList);
-    var prunedList = pruneList(mergedList, skippedList);
-    var reconciledList = reconcileAreas(prunedList, specialList, skipFirst);
-    
-    var len = reconciledList.length;
+    var addedList = getPointsList(addedPoints);
+    var len = addedList.length;
     for (var i=0; i<len; i++) {
-        pointsInMM[i] = {'downMM': reconciledList[i], 'crossMM': geometry["crossCorePosition"]};
+        pointsInMM[i] = {'downMM': addedList[i], 'crossMM': geometry["crossCorePosition"]};
     }
     return pointsInMM;
 }
 
-// This function attempts to convert the user-entered extra and skip point lists into numbers //
-
-function getPointsList(ptsRaw, name) {
+function getPointsList(ptsRaw) {
     var ptsList = ptsRaw.split(/[\n,]+/);
     var vals = [];
     var badPts = false;
@@ -316,7 +249,7 @@ function getPointsList(ptsRaw, name) {
             ptsList[i] = Number(ptsList[i]);
             if (isNaN(ptsList[i]) == true) {
                 if (badPts == false) {
-                    alert("Non-numeric value entered in " + name + " field. Points will be ignored");
+                    alert("Non-numeric value(s) entered in list of points. Point(s) will be ignored");
                     badPts = true;
                 }
             } else {
@@ -325,153 +258,6 @@ function getPointsList(ptsRaw, name) {
         }
     }
     return vals;
-}
-
-function getSpecialAreaList(areaRaw) {
-    var areaList = areaRaw.split(/[\n,]+/);
-    var vals = [];
-    var sub_vals = [];
-    var badArea = false;
-    var badSubset = false;
-    var i,j,len_i,len_j = 0;
-    len_i = areaList.length;
-    
-    for (i=0; i<len_i; i++) {
-        if (areaList[i] != "") {
-            sub_vals = areaList[i].split("-");
-            len_j = sub_vals.length;
-        
-            if (len_j != 3) {
-                if (badArea == false) {
-                    alert("Invalid special area defined. Area will be ignored");
-                    badArea = true;
-                }
-            } else {
-                badSubset = false;
-                for (j=0; j<3; j++) {
-                    sub_vals[j] = Number(sub_vals[j]);
-                    if (isNaN(sub_vals[i]) == true) {
-                        if (badArea == false) {
-                            alert("Non-numeric value entered in special areas field. Area will be ignored");
-                            badArea = true;
-                        }
-                        badSubset = true;
-                    }
-                }
-                if (badSubset == false) {
-                    var test1 = (sub_vals[1] - sub_vals[0]) > 0;
-                    var test2 = sub_vals[2] <= (sub_vals[1]-sub_vals[0]);
-                    if (!test1 || !test2) {
-                        badSubset = true;
-                        if (badArea == false) {
-                            alert("Invalid special area defined. Area will be ignored");
-                            badArea = true;
-                        }
-                    }
-                }
-                if (badSubset == false) {
-                    vals.push(sub_vals);
-                }
-            }
-        }
-    }
-    return vals;
-}
-
-// These functions are used to reconcile the different point lists //
-
-function generateArray(start, stop, step, skipFirst) {
-    var newArray = [];
-    var pointN = Math.floor((stop-start)/step);
-    var newPt = start;
-    if (skipFirst == false) {
-        newArray.push(newPt);
-    }
-    for (var i=0; i<pointN; i++) {
-        newPt = (i+1)*step + start;
-        newArray.push(newPt);
-    }
-    return newArray;
-}
-
-function removeDuplicates(originalList) {
-    originalList = originalList.sort(function(a,b){return a-b});
-    var originalListClean = [originalList[0]];
-    var len_k = originalList.length;
-    for (var k=1; k<len_k; k++) {
-        if (originalList[k] != originalList[k-1]) {
-            originalListClean.push(originalList[k]);
-        }
-    }
-    return originalListClean;
-}
-
-function mergeLists(originalList, newList) {
-    var mergedList = originalList.slice();
-    var len_i = originalList.length;
-    var len_j = newList.length;
-    var i,j = 0;
-    var found = false;
-    for (j=0; j<len_j; j++) {
-        found = false;
-        for (i=0; i<len_i; i++) {
-            if (newList[j] == originalList[i]) {
-                found = true;
-            }
-        }
-        if (found == false) {
-            mergedList.push(newList[j]);
-        }
-    }
-    var mergedListClean = removeDuplicates(mergedList);
-    return mergedListClean;
-}
-
-function pruneList(originalList, newList) {
-    var prunedList = [];
-    var len_i = originalList.length;
-    var len_j = newList.length;
-    var i,j = 0;
-    var found = false;
-    for (i=0; i<len_i; i++) {
-        found = false;
-        for (j=0; j<len_j; j++) {
-            if (originalList[i] == newList[j]) {
-                found = true;
-            }
-        }
-        if (found == false) {
-            prunedList.push(originalList[i]);
-        }
-    }
-    var prunedListClean = removeDuplicates(prunedList);
-    return prunedListClean;
-}
-
-function reconcileAreas(originalList, specialAreasList, skipFirst) {
-    var reconciled = originalList.slice();
-    var reconciled_new = [];
-    var new_area = [];
-    var i,j,start,end,step,len_j = 0;
-    
-    var len_i = specialAreasList.length;
-    for (i=0; i<len_i; i++) {
-        start = specialAreasList[i][0];
-        end = specialAreasList[i][1];
-        step = specialAreasList[i][2];
-        new_area = generateArray(start, end, step, skipFirst);
-        reconciled_new = [];
-        len_j = reconciled.length;
-        for (j=0; j<len_j; j++) {
-            if ((reconciled[j] < start) || (reconciled[j] > end)) {
-                reconciled_new.push(reconciled[j]);
-            }
-        }
-        reconciled_new = reconciled_new.concat(new_area);
-        reconciled = reconciled_new.slice();
-    }
-    var reconciledClean = removeDuplicates(reconciled);
-    return reconciledClean;
 }
 
 // This function generates the appropriate pixel positions and dimensions for the pints in mm //
@@ -503,8 +289,8 @@ function generatePixelPositions(pointsInMM, geometry) {
     return pointsInPX;
 }
 
-// This plots the points as rectangles on the canvas //
-// Note that it first overwrites the entire canvas with the core image //
+// This plots the points as rectangles on the core image //
+// Note that it first overwrites the entire canvas with current image //
 
 function drawPoints(points) {
     var lineRtxt = document.getElementById("lineRtxt").value;
@@ -531,7 +317,7 @@ function drawPoints(points) {
     }
     var rgbLineStr = "rgb(" + lineR + "," + lineG + "," + lineB + ")";
     
-    state_vals['context'].drawImage(state_vals["imgOrig"],0,0);
+    state_vals['context'].drawImage(state_vals["imgDisplay"],0,0); // Originally imgOrig //
     
     var tlX,tlY,delX,delY,R,G,B = 0;
     var rgbFillStr = "";
@@ -564,27 +350,30 @@ function drawPoints(points) {
 function printResults(listToPrint) {
     var resultsArea = document.getElementById("results");
     var resultsList = [];
+    var resultsRowList = [];
+    var resultsRowStr = "";
+    
     var len_i = listToPrint.length;
     var val;
     var colors = ["L*","a*","b*","X","Y","Z","R","G","B"];
     var len_j = colors.length;
     
-    resultsList.push(state_vals["fileName"]);
-    resultsRowStr = "Top: " + state_vals["coreTopPx"] + ", Bottom: " + state_vals["coreBottomPx"];
-    resultsList.push(resultsRowStr);
-    resultsRowStr = "Left: " + state_vals["coreLeftPx"] + ", Right: " + state_vals["coreRightPx"];
-    resultsList.push(resultsRowStr);
-    
-    var resultsRowList = [];
-    var resultsRowStr = "";
-    resultsRowList.push("downMM");
-    resultsRowList.push("crossMM");
-    for (var j=0; j<len_j; j++) {
-        resultsRowList.push(colors[j]);
+    if (resultsArea.value == "") {
+        resultsList.push(state_vals["fileName"]);
+        resultsRowStr = "Top: " + state_vals["coreTopPx"] + ", Bottom: " + state_vals["coreBottomPx"];
+        resultsList.push(resultsRowStr);
+        resultsRowStr = "Left: " + state_vals["coreLeftPx"] + ", Right: " + state_vals["coreRightPx"];
+        resultsList.push(resultsRowStr);
+        
+        resultsRowList.push("downMM");
+        resultsRowList.push("crossMM");
+        for (var j=0; j<len_j; j++) {
+            resultsRowList.push(colors[j]);
+        }
+        resultsRowStr = resultsRowList.join("  ");
+        resultsList.push(resultsRowStr);
     }
-    resultsRowStr = resultsRowList.join("  ");
-    resultsList.push(resultsRowStr);
-    
+        
     for (var i=0; i<len_i; i++) {
         resultsRowList = [];
         resultsRowList.push(listToPrint[i]["downMM"]);
@@ -602,7 +391,11 @@ function printResults(listToPrint) {
         resultsList.push(resultsRowStr);
     }
     var results = resultsList.join("\n");
-    resultsArea.value = results;
+    if (resultsArea.value != "") {
+        resultsArea.value = resultsArea.value + "\n" + results;
+    } else {
+        resultsArea.value = results;
+    }
     return;
 }
 
@@ -665,7 +458,6 @@ function drop_handler(ev) {
             state_vals['coreRightPx'] = leftX;
         }
     }
-    updateSliders();
     updateTxts();
     updateDivBounds();
     return;
