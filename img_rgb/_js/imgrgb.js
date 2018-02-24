@@ -317,7 +317,8 @@ function drawPoints(points) {
     }
     var rgbLineStr = "rgb(" + lineR + "," + lineG + "," + lineB + ")";
     
-    state_vals['context'].drawImage(state_vals["imgDisplay"],0,0); // Originally imgOrig //
+    // Refresh of canvas not needed in current iteration; keep line for debugging //
+    //state_vals['context'].drawImage(state_vals["imgOrig"],0,0);
     
     var tlX,tlY,delX,delY,R,G,B = 0;
     var rgbFillStr = "";
