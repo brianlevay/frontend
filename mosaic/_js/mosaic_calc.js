@@ -2,8 +2,7 @@
 // This maintains color reference variables //
 
 var ref_vals = {
-    RGB_XYZ_white: {'Xref':100.0,'Yref':100.0,'Zref':100.0},
-    XYZ_Lab_white: {'Xref':95.047,'Yref':100.000,'Zref':108.883}
+    D65: {'Xref':95.047,'Yref':100.000,'Zref':108.883}
 };
 
 // This handles the web worker aspect //
@@ -77,7 +76,7 @@ function averageRGB(pixels, width, tlX, tlY, delX, delY) {
     return aveRGB;
 }
 
-// This converts the RGB value to CIE XYZ //
+// This converts the sRGB value to CIE XYZ (with D65 illumination) and back //
 
 function RGBtoXYZ([R,G,B]) {
     var Rn = R/255;
@@ -86,22 +85,16 @@ function RGBtoXYZ([R,G,B]) {
     var r = Rn > 0.04045 ? Math.pow((Rn + 0.055)/1.055, 2.4) : (Rn/12.92);
     var g = Gn > 0.04045 ? Math.pow((Gn + 0.055)/1.055, 2.4) : (Gn/12.92);
     var b = Bn > 0.04045 ? Math.pow((Bn + 0.055)/1.055, 2.4) : (Bn/12.92);
-    var xn = (r * 0.4124) + (g * 0.3576) + (b * 0.1805);
-    var yn = (r * 0.2126) + (g * 0.7152) + (b * 0.0722);
-    var zn = (r * 0.0193) + (g * 0.1192) + (b * 0.9505);
-    var X = xn * ref_vals['RGB_XYZ_white']['Xref'];
-    var Y = yn * ref_vals['RGB_XYZ_white']['Yref'];
-    var Z = zn * ref_vals['RGB_XYZ_white']['Zref'];
+    var X = (r * 0.4124) + (g * 0.3576) + (b * 0.1805);
+    var Y = (r * 0.2126) + (g * 0.7152) + (b * 0.0722);
+    var Z = (r * 0.0193) + (g * 0.1192) + (b * 0.9505);
     return [X,Y,Z];
 }
 
 function XYZtoRGB([X,Y,Z]) {
-    var xn = X / ref_vals['RGB_XYZ_white']['Xref'];
-    var yn = Y / ref_vals['RGB_XYZ_white']['Yref'];
-    var zn = Z / ref_vals['RGB_XYZ_white']['Zref'];
-    var r = (xn * 3.2406) + (yn * -1.5372) + (zn * -0.4986);
-    var g = (xn * -0.9689) + (yn * 1.8758) + (zn * 0.0415);
-    var b = (xn * 0.0557) + (yn * -0.2040) + (zn * 1.0570);
+    var r = (X * 3.2406) + (Y * -1.5372) + (Z * -0.4986);
+    var g = (X * -0.9689) + (Y * 1.8758) + (Z * 0.0415);
+    var b = (X * 0.0557) + (Y * -0.2040) + (Z * 1.0570);
     var Rn = r > 0.0031308 ? 1.055*Math.pow(r,(1.0/2.4)) - 0.055 : (r/12.92);
     var Gn = g > 0.0031308 ? 1.055*Math.pow(g,(1.0/2.4)) - 0.055 : (g/12.92);
     var Bn = b > 0.0031308 ? 1.055*Math.pow(b,(1.0/2.4)) - 0.055 : (b/12.92);
@@ -111,12 +104,12 @@ function XYZtoRGB([X,Y,Z]) {
     return [R,G,B];
 }
 
-// This converts the CIE XYZ to Lab //
+// This converts the CIE XYZ (D65) to Lab and back //
 
 function XYZtoLab([X,Y,Z]) {
-    var xn = X / ref_vals['XYZ_Lab_white']['Xref'];
-    var yn = Y / ref_vals['XYZ_Lab_white']['Yref'];
-    var zn = Z / ref_vals['XYZ_Lab_white']['Zref'];
+    var xn = X / ref_vals['D65']['Xref'];
+    var yn = Y / ref_vals['D65']['Yref'];
+    var zn = Z / ref_vals['D65']['Zref'];
     var epsilon = 0.008856;
     var kappa = 903.3;
     var fx = xn > epsilon ? Math.pow(xn, (1.0/3.0)) : (kappa*xn + 16)/116;
@@ -137,8 +130,8 @@ function LabToXYZ([L,a,b]) {
     var xn = Math.pow(fx,3) > epsilon ? Math.pow(fx,3) : (116*fx - 16)/kappa;
     var yn = L > (kappa*epsilon) ? Math.pow(((L + 16)/116),3) : L/kappa;
     var zn = Math.pow(fz,3) > epsilon ? Math.pow(fz,3) : (116*fz - 16)/kappa;
-    var X = xn * ref_vals['XYZ_Lab_white']['Xref'];
-    var Y = yn * ref_vals['XYZ_Lab_white']['Yref'];
-    var Z = zn * ref_vals['XYZ_Lab_white']['Zref'];
+    var X = xn * ref_vals['D65']['Xref'];
+    var Y = yn * ref_vals['D65']['Yref'];
+    var Z = zn * ref_vals['D65']['Zref'];
     return[X,Y,Z];
 }
